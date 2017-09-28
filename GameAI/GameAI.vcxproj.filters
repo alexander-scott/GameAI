@@ -1,0 +1,158 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="TinyXML">
+      <UniqueIdentifier>{1d544555-3274-48e7-8786-45b7fe063987}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Chess">
+      <UniqueIdentifier>{a3224e69-b1c0-4e54-b414-8fc014825f23}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Conway">
+      <UniqueIdentifier>{79a913a3-f589-4dbf-96d7-501ce476cfc2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Lunar">
+      <UniqueIdentifier>{b3a71dea-3e10-44e4-a276-34a7f71d3c74}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C2DMatrix.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Commons.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Constants.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GameScreen.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GameScreenManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Texture2D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TinyXML\tinystr.h">
+      <Filter>TinyXML</Filter>
+    </ClInclude>
+    <ClInclude Include="TinyXML\tinyxml.h">
+      <Filter>TinyXML</Filter>
+    </ClInclude>
+    <ClInclude Include="Chess\ChessConstants.h">
+      <Filter>Chess</Filter>
+    </ClInclude>
+    <ClInclude Include="Chess\GameScreen_Chess.h">
+      <Filter>Chess</Filter>
+    </ClInclude>
+    <ClInclude Include="Chess\ChessCommons.h">
+      <Filter>Chess</Filter>
+    </ClInclude>
+    <ClInclude Include="Chess\ChessPlayer.h">
+      <Filter>Chess</Filter>
+    </ClInclude>
+    <ClInclude Include="Chess\ChessMoveManager.h">
+      <Filter>Chess</Filter>
+    </ClInclude>
+    <ClInclude Include="Chess\ChessPlayerAI.h">
+      <Filter>Chess</Filter>
+    </ClInclude>
+    <ClInclude Include="Conway\GameScreen_Conway.h">
+      <Filter>Conway</Filter>
+    </ClInclude>
+    <ClInclude Include="Conway\ConwayConstants.h">
+      <Filter>Conway</Filter>
+    </ClInclude>
+    <ClInclude Include="Lunar\GameScreen_Lunar.h">
+      <Filter>Lunar</Filter>
+    </ClInclude>
+    <ClInclude Include="Lunar\LunarConstants.h">
+      <Filter>Lunar</Filter>
+    </ClInclude>
+    <ClInclude Include="Lunar\LunarLander.h">
+      <Filter>Lunar</Filter>
+    </ClInclude>
+    <ClInclude Include="Collisions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GameObject.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="GameScreen.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GameScreenManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Texture2D.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TinyXML\tinystr.cpp">
+      <Filter>TinyXML</Filter>
+    </ClCompile>
+    <ClCompile Include="TinyXML\tinyxml.cpp">
+      <Filter>TinyXML</Filter>
+    </ClCompile>
+    <ClCompile Include="TinyXML\tinyxmlerror.cpp">
+      <Filter>TinyXML</Filter>
+    </ClCompile>
+    <ClCompile Include="TinyXML\tinyxmlparser.cpp">
+      <Filter>TinyXML</Filter>
+    </ClCompile>
+    <ClCompile Include="Chess\GameScreen_Chess.cpp">
+      <Filter>Chess</Filter>
+    </ClCompile>
+    <ClCompile Include="Chess\ChessPlayer.cpp">
+      <Filter>Chess</Filter>
+    </ClCompile>
+    <ClCompile Include="Chess\ChessMoveManager.cpp">
+      <Filter>Chess</Filter>
+    </ClCompile>
+    <ClCompile Include="Chess\ChessPlayerAI.cpp">
+      <Filter>Chess</Filter>
+    </ClCompile>
+    <ClCompile Include="Conway\GameScreen_Conway.cpp">
+      <Filter>Conway</Filter>
+    </ClCompile>
+    <ClCompile Include="Lunar\GameScreen_Lunar.cpp">
+      <Filter>Lunar</Filter>
+    </ClCompile>
+    <ClCompile Include="Lunar\LunarLander.cpp">
+      <Filter>Lunar</Filter>
+    </ClCompile>
+    <ClCompile Include="Collisions.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GameObject.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="SDL\SDL2.lib" />
+    <Library Include="SDL\SDL2_image.lib" />
+    <Library Include="SDL\SDL2_mixer.lib" />
+    <Library Include="SDL\SDL2main.lib" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Conway\ConwaySeed.xml">
+      <Filter>Conway</Filter>
+    </None>
+  </ItemGroup>
+</Project>

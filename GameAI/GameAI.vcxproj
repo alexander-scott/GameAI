@@ -1,0 +1,124 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{A4D8BD75-EDFE-4721-9570-86201AAB00D4}</ProjectGuid>
+    <RootNamespace>GameAI</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v140_xp</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v141</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>$(PROJECTDIR)\SDL\mixer_include;$(PROJECTDIR)\SDL\include;$(PROJECTDIR)\SDL\image_include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(PROJECTDIR)\SDL;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <SubSystem>Console</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="C2DMatrix.h" />
+    <ClInclude Include="Chess\ChessCommons.h" />
+    <ClInclude Include="Chess\ChessConstants.h" />
+    <ClInclude Include="Chess\ChessMoveManager.h" />
+    <ClInclude Include="Chess\ChessPlayerAI.h" />
+    <ClInclude Include="Chess\GameScreen_Chess.h" />
+    <ClInclude Include="Chess\ChessPlayer.h" />
+    <ClInclude Include="Collisions.h" />
+    <ClInclude Include="Commons.h" />
+    <ClInclude Include="Constants.h" />
+    <ClInclude Include="Conway\ConwayConstants.h" />
+    <ClInclude Include="Conway\GameScreen_Conway.h" />
+    <ClInclude Include="GameObject.h" />
+    <ClInclude Include="GameScreen.h" />
+    <ClInclude Include="GameScreenManager.h" />
+    <ClInclude Include="Lunar\GameScreen_Lunar.h" />
+    <ClInclude Include="Lunar\LunarConstants.h" />
+    <ClInclude Include="Lunar\LunarLander.h" />
+    <ClInclude Include="Texture2D.h" />
+    <ClInclude Include="TinyXML\tinystr.h" />
+    <ClInclude Include="TinyXML\tinyxml.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Chess\ChessMoveManager.cpp" />
+    <ClCompile Include="Chess\ChessPlayerAI.cpp" />
+    <ClCompile Include="Chess\GameScreen_Chess.cpp" />
+    <ClCompile Include="Chess\ChessPlayer.cpp" />
+    <ClCompile Include="Collisions.cpp" />
+    <ClCompile Include="Conway\GameScreen_Conway.cpp" />
+    <ClCompile Include="GameObject.cpp" />
+    <ClCompile Include="GameScreen.cpp" />
+    <ClCompile Include="GameScreenManager.cpp" />
+    <ClCompile Include="Lunar\GameScreen_Lunar.cpp" />
+    <ClCompile Include="Lunar\LunarLander.cpp" />
+    <ClCompile Include="Source.cpp" />
+    <ClCompile Include="Texture2D.cpp" />
+    <ClCompile Include="TinyXML\tinystr.cpp" />
+    <ClCompile Include="TinyXML\tinyxml.cpp" />
+    <ClCompile Include="TinyXML\tinyxmlerror.cpp" />
+    <ClCompile Include="TinyXML\tinyxmlparser.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="SDL\SDL2.lib" />
+    <Library Include="SDL\SDL2main.lib" />
+    <Library Include="SDL\SDL2_image.lib" />
+    <Library Include="SDL\SDL2_mixer.lib" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Conway\ConwaySeed.xml">
+      <SubType>Designer</SubType>
+    </None>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
