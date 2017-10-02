@@ -202,48 +202,71 @@ void GameScreen_Conway::LoadMap(std::string path)
 
 void GameScreen_Conway::DetermineState()
 {
-	int ** mapTwo;
-	mapTwo = new int*[(kConwayScreenWidth / kConwayTileDimensions) + 1];
-	for (int i = 0; i < (kConwayScreenWidth / kConwayTileDimensions) + 1; i++)
-		mapTwo[i] = new int[(kConwayScreenWidth / kConwayTileDimensions) + 1];
+	int totalTiles = (kConwayScreenWidth / kConwayTileDimensions);
 
-	for (int a = 0; a < kConwayScreenWidth / kConwayTileDimensions; a++)
+	
+	// Create and initalise the array of tiles
+	int ** mapTwo;
+	mapTwo = new int*[totalTiles + 1]; 
+
+
+	// Create and initalise a child array for each tile
+	for (int i = 0; i < totalTiles + 1; i++)
 	{
-		for (int b = 0; b < kConwayScreenWidth / kConwayTileDimensions; b++)
+		mapTwo[i] = new int[totalTiles + 1];
+	}
+
+
+	// For each tile in mapTwo
+	for (int a = 0; a < totalTiles; a++)
+	{
+		// For each value in the child array of tile 'a'
+		for (int b = 0; b < totalTiles; b++)
 		{
+			// Copy the contents from mMap to mapTwo
 			mapTwo[a][b] = mMap[a][b];
 		}
 	}
 
-	for (int a = 1; a < kConwayScreenWidth / kConwayTileDimensions; a++)
+
+	// For each tile in mapTwo
+	for (int a = 1; a < totalTiles; a++)
 	{
-		for (int b = 1; b < kConwayScreenWidth / kConwayTileDimensions; b++)
+		// For each value in the child array of tile 'a'
+		for (int b = 1; b < totalTiles; b++)
 		{
-			int alive = 0;
+			int surroundingAliveTiles = 0;
+
+			// These two loops go through the 9 tiles surrounding [a][b] (including the current tile itself)
 			for (int c = -1; c < 2; c++)
 			{
 				for (int d = -1; d < 2; d++)
 				{
-					if (!(c == 0 && d == 0))
+					if (!(c == 0 && d == 0)) // C == 0 and D == 0 is the current tile ([a][b]) so ignore this one
 					{
-						if (mapTwo[a + c][b + d])
+						if (mapTwo[a + c][b + d]) // If the tile that we are currently at is alive
 						{
-							++alive;
+							++surroundingAliveTiles; // Increment alive surrounding tiles
 						}
 					}
 				}
 			}
-			if (alive < 2)
+
+			if (surroundingAliveTiles < 2) // 1 or 0 surrounding alive tiles = [a][b] is now dead
 			{
 				mMap[a][b] = 0;
 			}
-			else if (alive == 3)
+			else if (surroundingAliveTiles == 3) // Exactly 3 surrounding alive tiles = [a][b] is now alive
 			{
 				mMap[a][b] = 1;
 			}
-			else if (alive > 3)
+			else if (surroundingAliveTiles > 3) // More than 3 surrounding alive tiles = [a][b] is now dead
 			{
 				mMap[a][b] = 0;
+			}
+			else // 2 surrounding alive tiles = [a][b] doesn't change
+			{
+
 			}
 		}
 	}
