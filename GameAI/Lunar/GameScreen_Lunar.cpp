@@ -219,28 +219,149 @@ void GameScreen_Lunar::UpdateAILanders(size_t deltaTime, SDL_Event e)
 
 void GameScreen_Lunar::CalculateFitness()
 {
-	//Todo: Code this function.
+	// Give each lander a score based on distance from platform centre and time taken to reach platform. Higher score is better
+
+	double totalFitness = 0;
+	for (int i = 0; i < kNumberOfAILanders; i++)
+	{
+		const double x_diff = mAILanders[i]->GetCentralPosition().x - mPlatformPosition.x;
+		const double y_diff = mAILanders[i]->GetCentralPosition().y - mPlatformPosition.y;
+
+		const double disFit = std::sqrt(x_diff * x_diff + y_diff * y_diff);
+		const double rotFit = std::abs(360 - mAILanders[i]->GetRotationAngle());
+
+		if (mAILanders[i]->IsAlive()) // If the lander survived
+		{
+			// The shortest time to reach the platform is best
+			mFitnessValues[i] = 10000 - mAILanders[i]->GetSurvivalTime();
+		}
+		else
+		{
+			// A mixture of closest distance to platform, closest rotation to 0, longest time survived
+			mFitnessValues[i] = (500 - disFit) + (100 - rotFit) + mAILanders[i]->GetSurvivalTime();
+		}
+
+		totalFitness += mFitnessValues[i];
+	}
+
+	cout << "Total fitness: " << std::to_string(totalFitness) << endl;
+
+	Selection();
 }
 
 //--------------------------------------------------------------------------------------------------
 
 void GameScreen_Lunar::Selection()
 {
-	//Todo: Code this function.
+	// Select the top N (EVEN NUMBER) landers based on their score.
+
+	mSelectedAIChromosomes[kNumberOfAILanders][kNumberOfChromosomeElements] = { };
+
+	double highestScore = 0;
+
+	// Find the first highest score
+	for (int i = 0; i < kNumberOfAILanders; i++)
+	{
+		if (mFitnessValues[i] > highestScore)
+		{
+			highestScore = mFitnessValues[i]; // Set it for future iterations
+
+			for (int action = 0; action < kNumberOfChromosomeElements; action++)
+			{
+				mSelectedAIChromosomes[0][action] = mChromosomes[i][action];
+			}
+		}
+	}
+
+	double currentHighestScore = 0;
+
+	// Acquire the top 'kChromosomesToEvolve' scores
+	for (int i = 1; i < kChromosomesToEvolve; i++)
+	{		
+		int highestIndex = 0;
+
+		for (int j = 0; j < kNumberOfAILanders; j++)
+		{
+			if (mFitnessValues[j] < highestScore && mFitnessValues[j] > currentHighestScore)
+			{
+				currentHighestScore = mFitnessValues[j];
+				highestIndex = j;
+			}
+		}
+
+		highestScore = currentHighestScore;
+
+		for (int action = 0; action < kNumberOfChromosomeElements; action++)
+		{
+			mSelectedAIChromosomes[i][action] = mChromosomes[highestIndex][action];
+		}
+	}
+
+	Crossover();
 }
 
 //--------------------------------------------------------------------------------------------------
 
 void GameScreen_Lunar::Crossover()
 {
-	//Todo: Code this function.
+	// Choose two random landers from the new pool. Combine half and half each of the landers chromosomes to create a new lander.
+	// Do for every lander
+
+	int count = 0;
+	for (int i = 0; i < kChromosomesToEvolve; i += 2)
+	{
+		// Half the chromosomes will be come from i
+		for (int action = 0; action < kNumberOfChromosomeElements/2; action++)
+		{
+			mChromosomes[count][action] = mSelectedAIChromosomes[i][action];
+		}
+
+		// Half the chromosomes will be come from i + 1
+		for (int action = kNumberOfChromosomeElements / 2; action < kNumberOfChromosomeElements; action++)
+		{
+			mChromosomes[count][action] = mSelectedAIChromosomes[i + 1][action];
+		}
+
+		count++;
+	}
+
+	for (int i = 0; i < kChromosomesToEvolve; i += 2)
+	{
+		for (int action = 0; action < kNumberOfChromosomeElements / 2; action++)
+		{
+			mChromosomes[count][action] = mSelectedAIChromosomes[i+1][action];
+		}
+
+		for (int action = kNumberOfChromosomeElements / 2; action < kNumberOfChromosomeElements; action++)
+		{
+			mChromosomes[count][action] = mSelectedAIChromosomes[i][action];
+		}
+
+		count++;
+	}
+
+	Mutation();
 }
 
 //--------------------------------------------------------------------------------------------------
 
 void GameScreen_Lunar::Mutation()
 {
-	//Todo: Code this function.
+	// Randomly change a single gene in the new landers.
+
+	for (int i = 0; i < kChromosomesToEvolve; i++)
+	{
+		mChromosomes[i][(rand() % kNumberOfChromosomeElements)] = (LunarAction)(rand() % LunarAction_MaxActions);
+	}
+
+	// Fill the rest with random chromosomes
+	for (int i = kChromosomesToEvolve; i < kNumberOfAILanders; i++)
+	{
+		for (int action = 0; action < kNumberOfChromosomeElements; action++)
+		{
+			mChromosomes[i][action] = (LunarAction)(rand() % LunarAction_MaxActions);
+		}
+	}
 
 	RestartGA();
 }

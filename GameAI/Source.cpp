@@ -48,7 +48,7 @@ int main(int argc, char* args[])
 	if(InitSDL())
 	{
 		//Set up the game screen manager - Start with Level1
-		gameScreenManager = new GameScreenManager(gRenderer, SCREEN_CONWAY);// SCREEN_CONWAY);// SCREEN_RAINBOWISLANDS);// SCREEN_LUNAR);//SCREEN_CHESS);
+		gameScreenManager = new GameScreenManager(gRenderer, SCREEN_LUNAR);// SCREEN_CONWAY);// SCREEN_RAINBOWISLANDS);// SCREEN_LUNAR);//SCREEN_CHESS);
 		
 		//Start the music.
 		//LoadMusic("Music/.mp3");
@@ -124,7 +124,7 @@ bool InitSDL()
 		}
 
 		//All good, so attempt to create the window.
-		gWindow = SDL_CreateWindow("Game AI", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, kConwayScreenWidth, kConwayScreenHeight, SDL_WINDOW_SHOWN);
+		gWindow = SDL_CreateWindow("Game AI", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, kLunarScreenWidth, kLunarScreenHeight, SDL_WINDOW_SHOWN);
 		//Did the window get created?
 		if(gWindow != NULL)
 		{
