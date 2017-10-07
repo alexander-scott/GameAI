@@ -228,8 +228,8 @@ void GameScreen_Lunar::CalculateFitness()
 		const double y_diff = mAILanders[i]->GetCentralPosition().y - mPlatformPosition.y;
 		const double rotAngle = mAILanders[i]->GetRotationAngle();
 
-		const double disFit = std::sqrt(x_diff * x_diff + y_diff * y_diff);
-		const double rotFit = std::abs(360 - rotAngle);
+		const double disFit = kLunarScreenWidth - std::sqrt(x_diff * x_diff + y_diff * y_diff);
+		const double rotFit = 1 / (std::abs(rotAngle) + 1);
 
 		double survivalTime = mAILanders[i]->GetSurvivalTime();
 		double speed = mAILanders[i]->GetSpeed();
@@ -245,7 +245,7 @@ void GameScreen_Lunar::CalculateFitness()
 		else
 		{
 			// A mixture of closest distance to platform, closest rotation to 0, longest time survived
-			mFitnessValues[i] = (500 - disFit) + (200 - rotFit) + (300 - speedFit);
+			mFitnessValues[i] = (disFit) + (500 * rotFit) + (speedFit);
 		}
 
 		totalFitness += mFitnessValues[i];
