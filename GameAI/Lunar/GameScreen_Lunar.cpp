@@ -317,83 +317,25 @@ void GameScreen_Lunar::Crossover()
 	// Choose two random landers from the new pool. Combine half and half each of the landers chromosomes to create a new lander.
 	// Do for every lander
 
-//#pragma region Half and Half
-//
-//	int count = 0;
-//	for (int i = 0; i < kChromosomesToEvolve / 2; i += 2)
-//	{
-//		// Half the chromosomes will be come from i
-//		for (int action = 0; action < kNumberOfChromosomeElements; action++)
-//		{
-//			if (action == 0 || action % 2 == 0)
-//			{
-//				mChromosomes[count][action] = mSelectedAIChromosomes[i][action];
-//			}
-//			else
-//			{
-//				mChromosomes[count][action] = mSelectedAIChromosomes[i + 1][action];
-//			}
-//		}
-//
-//		count++;
-//	}
-//
-//	for (int i = 0; i < kChromosomesToEvolve / 2; i += 2)
-//	{
-//		// Half the chromosomes will be come from i
-//		for (int action = 0; action < kNumberOfChromosomeElements; action++)
-//		{
-//			if (action == 0 || action % 2 == 0)
-//			{
-//				mChromosomes[count][action] = mSelectedAIChromosomes[i + 1][action];
-//			}
-//			else
-//			{
-//				mChromosomes[count][action] = mSelectedAIChromosomes[i][action];
-//			}
-//		}
-//
-//		count++;
-//	}
-//
-//#pragma endregion
+	// Give every chromosome a mix from the top 'kChromosomesToEvolve' selected chromosomes. DO NOT RANDOMLY GENERATE ANY NEW ONES
 
-#pragma region Every Other
-
-	int count = 0;
-	for (int i = 0; i < kChromosomesToEvolve; i += 2)
+	for (int i = 0; i < kNumberOfAILanders; i++)
 	{
+		int randomIndex1 = (rand() % kChromosomesToEvolve);
+		int randomIndex2 = (rand() % kChromosomesToEvolve);
+
 		// Half the chromosomes will be come from i
 		for (int action = 0; action < kNumberOfChromosomeElements / 2; action++)
 		{
-			mChromosomes[count][action] = mSelectedAIChromosomes[i][action];
+			mChromosomes[i][action] = mSelectedAIChromosomes[randomIndex1][action];
 		}
 
 		// Half the chromosomes will be come from i + 1
 		for (int action = kNumberOfChromosomeElements / 2; action < kNumberOfChromosomeElements; action++)
 		{
-			mChromosomes[count][action] = mSelectedAIChromosomes[i + 1][action];
+			mChromosomes[i][action] = mSelectedAIChromosomes[randomIndex2][action];
 		}
-
-		count++;
 	}
-
-	for (int i = 0; i < kChromosomesToEvolve; i += 2)
-	{
-		for (int action = 0; action < kNumberOfChromosomeElements / 2; action++)
-		{
-			mChromosomes[count][action] = mSelectedAIChromosomes[i + 1][action];
-		}
-
-		for (int action = kNumberOfChromosomeElements / 2; action < kNumberOfChromosomeElements; action++)
-		{
-			mChromosomes[count][action] = mSelectedAIChromosomes[i][action];
-		}
-
-		count++;
-	}
-
-#pragma endregion
 
 	Mutation();
 }
@@ -407,15 +349,6 @@ void GameScreen_Lunar::Mutation()
 	for (int i = 0; i < kChromosomesToEvolve; i++)
 	{
 		mChromosomes[i][(rand() % kNumberOfChromosomeElements)] = (LunarAction)(rand() % LunarAction_MaxActions);
-	}
-
-	// Fill the rest with random chromosomes
-	for (int i = kChromosomesToEvolve; i < kNumberOfAILanders; i++)
-	{
-		for (int action = 0; action < kNumberOfChromosomeElements; action++)
-		{
-			mChromosomes[i][action] = (LunarAction)(rand() % LunarAction_MaxActions);
-		}
 	}
 
 	RestartGA();
