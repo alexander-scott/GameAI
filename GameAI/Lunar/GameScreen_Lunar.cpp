@@ -226,19 +226,26 @@ void GameScreen_Lunar::CalculateFitness()
 	{
 		const double x_diff = mAILanders[i]->GetCentralPosition().x - mPlatformPosition.x;
 		const double y_diff = mAILanders[i]->GetCentralPosition().y - mPlatformPosition.y;
+		const double rotAngle = mAILanders[i]->GetRotationAngle();
 
 		const double disFit = std::sqrt(x_diff * x_diff + y_diff * y_diff);
-		const double rotFit = std::abs(360 - mAILanders[i]->GetRotationAngle());
+		const double rotFit = std::abs(360 - rotAngle);
+
+		double survivalTime = mAILanders[i]->GetSurvivalTime();
+		double speed = mAILanders[i]->GetSpeed();
+
+		double speedFit = (double)survivalTime / (speed + 1);
 
 		if (mAILanders[i]->IsAlive()) // If the lander survived
 		{
 			// The shortest time to reach the platform is best
-			mFitnessValues[i] = 10000 - mAILanders[i]->GetSurvivalTime();
+			mFitnessValues[i] = 10000 - speedFit;
+			cout << "LANDED ON PLATFORM!";
 		}
 		else
 		{
 			// A mixture of closest distance to platform, closest rotation to 0, longest time survived
-			mFitnessValues[i] = (500 - disFit) + (100 - rotFit) + mAILanders[i]->GetSurvivalTime();
+			mFitnessValues[i] = (500 - disFit) + (200 - rotFit) + (300 - speedFit);
 		}
 
 		totalFitness += mFitnessValues[i];
@@ -258,19 +265,21 @@ void GameScreen_Lunar::Selection()
 	mSelectedAIChromosomes[kNumberOfAILanders][kNumberOfChromosomeElements] = { };
 
 	double highestScore = 0;
+	int highestIndex = 0;
 
 	// Find the first highest score
 	for (int i = 0; i < kNumberOfAILanders; i++)
 	{
 		if (mFitnessValues[i] > highestScore)
 		{
-			highestScore = mFitnessValues[i]; // Set it for future iterations
-
-			for (int action = 0; action < kNumberOfChromosomeElements; action++)
-			{
-				mSelectedAIChromosomes[0][action] = mChromosomes[i][action];
-			}
+			highestIndex = i;
+			highestScore = mFitnessValues[highestIndex];
 		}
+	}
+
+	for (int action = 0; action < kNumberOfChromosomeElements; action++)
+	{
+		mSelectedAIChromosomes[0][action] = mChromosomes[highestIndex][action];
 	}
 
 	double currentHighestScore = 0;
@@ -278,7 +287,8 @@ void GameScreen_Lunar::Selection()
 	// Acquire the top 'kChromosomesToEvolve' scores
 	for (int i = 1; i < kChromosomesToEvolve; i++)
 	{		
-		int highestIndex = 0;
+		highestIndex = 0;
+		currentHighestScore = 0;
 
 		for (int j = 0; j < kNumberOfAILanders; j++)
 		{
@@ -307,11 +317,54 @@ void GameScreen_Lunar::Crossover()
 	// Choose two random landers from the new pool. Combine half and half each of the landers chromosomes to create a new lander.
 	// Do for every lander
 
+//#pragma region Half and Half
+//
+//	int count = 0;
+//	for (int i = 0; i < kChromosomesToEvolve / 2; i += 2)
+//	{
+//		// Half the chromosomes will be come from i
+//		for (int action = 0; action < kNumberOfChromosomeElements; action++)
+//		{
+//			if (action == 0 || action % 2 == 0)
+//			{
+//				mChromosomes[count][action] = mSelectedAIChromosomes[i][action];
+//			}
+//			else
+//			{
+//				mChromosomes[count][action] = mSelectedAIChromosomes[i + 1][action];
+//			}
+//		}
+//
+//		count++;
+//	}
+//
+//	for (int i = 0; i < kChromosomesToEvolve / 2; i += 2)
+//	{
+//		// Half the chromosomes will be come from i
+//		for (int action = 0; action < kNumberOfChromosomeElements; action++)
+//		{
+//			if (action == 0 || action % 2 == 0)
+//			{
+//				mChromosomes[count][action] = mSelectedAIChromosomes[i + 1][action];
+//			}
+//			else
+//			{
+//				mChromosomes[count][action] = mSelectedAIChromosomes[i][action];
+//			}
+//		}
+//
+//		count++;
+//	}
+//
+//#pragma endregion
+
+#pragma region Every Other
+
 	int count = 0;
 	for (int i = 0; i < kChromosomesToEvolve; i += 2)
 	{
 		// Half the chromosomes will be come from i
-		for (int action = 0; action < kNumberOfChromosomeElements/2; action++)
+		for (int action = 0; action < kNumberOfChromosomeElements / 2; action++)
 		{
 			mChromosomes[count][action] = mSelectedAIChromosomes[i][action];
 		}
@@ -329,7 +382,7 @@ void GameScreen_Lunar::Crossover()
 	{
 		for (int action = 0; action < kNumberOfChromosomeElements / 2; action++)
 		{
-			mChromosomes[count][action] = mSelectedAIChromosomes[i+1][action];
+			mChromosomes[count][action] = mSelectedAIChromosomes[i + 1][action];
 		}
 
 		for (int action = kNumberOfChromosomeElements / 2; action < kNumberOfChromosomeElements; action++)
@@ -339,6 +392,8 @@ void GameScreen_Lunar::Crossover()
 
 		count++;
 	}
+
+#pragma endregion
 
 	Mutation();
 }
