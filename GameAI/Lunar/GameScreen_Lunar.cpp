@@ -217,34 +217,33 @@ void GameScreen_Lunar::UpdateAILanders(size_t deltaTime, SDL_Event e)
 }
 //--------------------------------------------------------------------------------------------------
 
+// Give each lander a score based on distance from platform centre and time taken to reach platform. Higher score is better
 void GameScreen_Lunar::CalculateFitness()
 {
-	// Give each lander a score based on distance from platform centre and time taken to reach platform. Higher score is better
-
+	// Variable used to determine to total fitness of all landers this generation to see if the overall fitness is improving round by round
 	double totalFitness = 0;
+
 	for (int i = 0; i < kNumberOfAILanders; i++)
 	{
-		const double x_diff = mAILanders[i]->GetCentralPosition().x - mPlatformPosition.x;
-		const double y_diff = mAILanders[i]->GetCentralPosition().y - mPlatformPosition.y;
-		const double rotAngle = mAILanders[i]->GetRotationAngle();
-
-		const double disFit = kLunarScreenWidth - std::sqrt(x_diff * x_diff + y_diff * y_diff);
-		const double rotFit = 1 / (std::abs(rotAngle) + 1);
-
+		double x_diff = mAILanders[i]->GetCentralPosition().x - mPlatformPosition.x;
+		double y_diff = mAILanders[i]->GetCentralPosition().y - mPlatformPosition.y;
+		double rotAngle = mAILanders[i]->GetRotationAngle();
 		double survivalTime = mAILanders[i]->GetSurvivalTime();
 		double speed = mAILanders[i]->GetSpeed();
 
-		double speedFit = (double)survivalTime / (speed + 1);
+		double disFit = kLunarScreenWidth - std::sqrt(x_diff * x_diff + y_diff * y_diff);
+		double rotFit = 1 / (std::abs(rotAngle) + 1);
+		double speedFit = survivalTime / (speed + 1);
 
 		if (mAILanders[i]->IsAlive()) // If the lander survived
 		{
 			// The shortest time to reach the platform is best
-			mFitnessValues[i] = 10000 - speedFit;
-			cout << "LANDED ON PLATFORM!";
+			mFitnessValues[i] = 10000 - survivalTime;
+			cout << "LANDED ON PLATFORM! ";
 		}
 		else
 		{
-			// A mixture of closest distance to platform, closest rotation to 0, longest time survived
+			// A mixture of closest distance to platform, closest rotation to 0, time survived/speed
 			mFitnessValues[i] = (disFit) + (500 * rotFit) + (speedFit);
 		}
 
@@ -258,49 +257,34 @@ void GameScreen_Lunar::CalculateFitness()
 
 //--------------------------------------------------------------------------------------------------
 
+// Select the top 'kChromosomesToEvolve' landers based on their score
 void GameScreen_Lunar::Selection()
 {
-	// Select the top N (EVEN NUMBER) landers based on their score.
-
 	mSelectedAIChromosomes[kNumberOfAILanders][kNumberOfChromosomeElements] = { };
 
-	double highestScore = 0;
-	int highestIndex = 0;
-
-	// Find the first highest score
-	for (int i = 0; i < kNumberOfAILanders; i++)
-	{
-		if (mFitnessValues[i] > highestScore)
-		{
-			highestIndex = i;
-			highestScore = mFitnessValues[highestIndex];
-		}
-	}
-
-	for (int action = 0; action < kNumberOfChromosomeElements; action++)
-	{
-		mSelectedAIChromosomes[0][action] = mChromosomes[highestIndex][action];
-	}
-
-	double currentHighestScore = 0;
-
-	// Acquire the top 'kChromosomesToEvolve' scores
-	for (int i = 1; i < kChromosomesToEvolve; i++)
+	double previousHighestScore = 1000000;
+	double currentHighestScore;
+	int highestIndex;
+	
+	// Acquire the highest scores
+	for (int i = 0; i < kChromosomesToEvolve; i++)
 	{		
 		highestIndex = 0;
 		currentHighestScore = 0;
 
 		for (int j = 0; j < kNumberOfAILanders; j++)
 		{
-			if (mFitnessValues[j] < highestScore && mFitnessValues[j] > currentHighestScore)
+			if (mFitnessValues[j] < previousHighestScore // Must be lower than the previous place high score to find the next place high score
+				&& mFitnessValues[j] > currentHighestScore) // But higher than all the other scores
 			{
 				currentHighestScore = mFitnessValues[j];
 				highestIndex = j;
 			}
 		}
 
-		highestScore = currentHighestScore;
+		previousHighestScore = currentHighestScore;
 
+		// Copy over the chromosomes from this high scoring lander
 		for (int action = 0; action < kNumberOfChromosomeElements; action++)
 		{
 			mSelectedAIChromosomes[i][action] = mChromosomes[highestIndex][action];
@@ -312,25 +296,22 @@ void GameScreen_Lunar::Selection()
 
 //--------------------------------------------------------------------------------------------------
 
+// Choose two random landers from the new pool. Combine half and half each of the landers chromosomes to create a new lander. 
+// Fill the rest of the new chromosomes with a mix of genes from the high scoring landers.
 void GameScreen_Lunar::Crossover()
 {
-	// Choose two random landers from the new pool. Combine half and half each of the landers chromosomes to create a new lander.
-	// Do for every lander
-
-	// Give every chromosome a mix from the top 'kChromosomesToEvolve' selected chromosomes. DO NOT RANDOMLY GENERATE ANY NEW ONES
-
 	for (int i = 0; i < kNumberOfAILanders; i++)
 	{
 		int randomIndex1 = (rand() % kChromosomesToEvolve);
 		int randomIndex2 = (rand() % kChromosomesToEvolve);
 
-		// Half the chromosomes will be come from i
+		// Half the chromosomes will be come from randomIndex1
 		for (int action = 0; action < kNumberOfChromosomeElements / 2; action++)
 		{
 			mChromosomes[i][action] = mSelectedAIChromosomes[randomIndex1][action];
 		}
 
-		// Half the chromosomes will be come from i + 1
+		// Half the chromosomes will be come from randomIndex2
 		for (int action = kNumberOfChromosomeElements / 2; action < kNumberOfChromosomeElements; action++)
 		{
 			mChromosomes[i][action] = mSelectedAIChromosomes[randomIndex2][action];
@@ -342,11 +323,10 @@ void GameScreen_Lunar::Crossover()
 
 //--------------------------------------------------------------------------------------------------
 
+// Randomly change a single gene in the landers.
 void GameScreen_Lunar::Mutation()
 {
-	// Randomly change a single gene in the new landers.
-
-	for (int i = 0; i < kChromosomesToEvolve; i++)
+	for (int i = 0; i < kNumberOfAILanders; i++)
 	{
 		mChromosomes[i][(rand() % kNumberOfChromosomeElements)] = (LunarAction)(rand() % LunarAction_MaxActions);
 	}
