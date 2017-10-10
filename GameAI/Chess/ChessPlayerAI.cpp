@@ -159,7 +159,33 @@ int ChessPlayerAI::MiniMax(Board board, int depth, Move* bestMove)
 int ChessPlayerAI::Maximise(Board board, int depth, Move* bestMove, int parentLow)
 {
 	//TODO: Code Maximise function.
-	return 0;
+
+	vector<Move> moves;
+
+	if (depth >= *mDepthToSearch) {//if depth limit is reached
+		return bestMove->score;
+	}
+	else 
+	{
+		GetAllMoveOptions(board, mTeamColour, &moves);
+
+		for (int i = 0; i < moves.size(); i++)
+		{
+			int currentScore = Minimise(board, depth + 1, &moves.at(i), parentLow);
+
+			if (bestMove == NULL || currentScore > bestMove->score)
+			{
+				bestMove = &moves.at(i);
+			}
+
+			if (currentScore > parentLow)
+			{
+				return bestMove->score;
+			}
+		}
+
+		return bestMove->score;
+	}
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -167,7 +193,33 @@ int ChessPlayerAI::Maximise(Board board, int depth, Move* bestMove, int parentLo
 int ChessPlayerAI::Minimise(Board board, int depth, Move* bestMove, int parentHigh)
 {
 	//TODO: Code Minimise function.
-	return 0;
+
+	vector<Move> moves;
+
+	if (depth >= *mDepthToSearch) {//if depth limit is reached
+		return bestMove->score;
+	}
+	else
+	{
+		GetAllMoveOptions(board, mTeamColour, &moves);
+
+		for (int i = 0; i < moves.size(); i++)
+		{
+			int currentScore = Maximise(board, depth + 1, &moves.at(i), parentHigh);
+
+			if (bestMove == NULL || currentScore < bestMove->score)
+			{
+				bestMove = &moves.at(i);
+			}
+
+			if (currentScore < parentHigh)
+			{
+				return bestMove->score;
+			}
+		}
+
+		return bestMove->score;
+	}
 }
 
 //--------------------------------------------------------------------------------------------------
