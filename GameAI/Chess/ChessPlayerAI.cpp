@@ -135,13 +135,12 @@ bool ChessPlayerAI::TakeATurn(SDL_Event e)
 	DWORD startTime		 = GetTickCount();
 	DWORD currentTime	 = 0;
 
-	vector<Move> moves;
-	GetAllMoveOptions(*mChessBoard, mTeamColour, &moves);
-	Move* move = &moves.at(0);
+	_maxBestMove = nullptr;
+	_minBestMove = nullptr;
 
-	MiniMax(*mChessBoard, 0, move);
+	MiniMax(*mChessBoard, 0, _maxBestMove);
 
-	bool gameStillActive = MakeAMove(move);
+	bool gameStillActive = MakeAMove(_maxBestMove);
 	currentTime = GetTickCount();
 	cout << " - [AI Time taken: " << std::setprecision(10) << (currentTime-startTime)/1000.0f << " seconds]";
 	return gameStillActive;
@@ -154,7 +153,7 @@ bool ChessPlayerAI::TakeATurn(SDL_Event e)
 
 int ChessPlayerAI::MiniMax(Board board, int depth, Move* bestMove)
 {
-	int score = Maximise(board, depth, bestMove, MaxInt);
+	int score = Maximise(board, depth, _maxBestMove, MaxInt);
 	return score;
 }
 
@@ -171,36 +170,63 @@ int ChessPlayerAI::Maximise(Board board, int depth, Move* bestMove, int parentLo
 	else 
 	{
 		vector<Move>* moves = new vector<Move>;
-		Board newBoard = Board(board);
-
-		if (bestMove != nullptr)
-		{
-			newBoard.currentLayout[bestMove->from_X][bestMove->from_Y].hasMoved = true;
-			newBoard.currentLayout[bestMove->to_X][bestMove->to_Y] = mChessBoard->currentLayout[bestMove->from_X][bestMove->from_Y];
-			newBoard.currentLayout[bestMove->from_X][bestMove->from_Y] = BoardPiece();
-		}
-
-		GetAllMoveOptions(newBoard, mTeamColour, moves);
+		GetAllMoveOptions(board, (mTeamColour == COLOUR_WHITE ? COLOUR_WHITE : COLOUR_BLACK), moves);
 
 		int currentScore = -MaxInt;
 
-		for (int i = 0; i < moves->size(); i++)
+		vector<Move>::iterator it;
+		for (it = moves->begin(); it != moves->end(); it++) 
 		{
-			currentScore = max(currentScore, Minimise(newBoard, depth + 1, &moves->at(i), parentLow));
+			Board newBoard = Board(board);
+			newBoard.currentLayout[it->from_X][it->from_Y].hasMoved = true;
+			newBoard.currentLayout[it->to_X][it->to_Y] = mChessBoard->currentLayout[it->from_X][it->from_Y];
+			newBoard.currentLayout[it->from_X][it->from_Y] = BoardPiece();
 
-			if (bestMove == NULL || bestMove->score > currentScore)
+			int newScore = Minimise(newBoard, depth + 1, &(*it), parentLow);
+
+			if (currentScore < newScore)
 			{
-				bestMove = &moves->at(i);
-				bestMove->score = currentScore;
+				currentScore = newScore;
+				_maxBestMove = new Move((*it));
+				_maxBestMove->score = currentScore;
 			}
 
-			if (parentLow <= bestMove->score)
+			//currentScore = max(currentScore, Minimise(newBoard, depth + 1, &(*it), parentLow));
+
+			/*if (bestMove == NULL || bestMove->score > currentScore)
 			{
-				break;
-			}	
+				bestMove = new Move((*it));
+				bestMove->score = currentScore;
+			}*/
+
+			/*if (parentLow <= bestMove->score)
+			{
+			break;
+			}	*/
 		}
 
-		return ScoreTheBoard(board);
+		//for (int i = 0; i < moves->size(); i++)
+		//{
+		//	Board newBoard = Board(board);
+		//	newBoard.currentLayout[moves->at(i).from_X][moves->at(i).from_Y].hasMoved = true;
+		//	newBoard.currentLayout[moves->at(i).to_X][moves->at(i).to_Y] = mChessBoard->currentLayout[moves->at(i).from_X][moves->at(i).from_Y];
+		//	newBoard.currentLayout[moves->at(i).from_X][moves->at(i).from_Y] = BoardPiece();
+
+		//	currentScore = max(currentScore, Minimise(newBoard, depth + 1, &moves->at(i), parentLow));
+
+		//	if (bestMove == NULL || bestMove->score > currentScore)
+		//	{
+		//		bestMove = new Move(moves->at(i));
+		//		bestMove->score = currentScore;
+		//	}
+
+		//	/*if (parentLow <= bestMove->score)
+		//	{
+		//		break;
+		//	}	*/
+		//}
+
+		return currentScore;
 	}
 }
 
@@ -216,36 +242,58 @@ int ChessPlayerAI::Minimise(Board board, int depth, Move* bestMove, int parentHi
 	else
 	{
 		vector<Move>* moves = new vector<Move>;
-		Board newBoard = Board(board);
-
-		if (bestMove != nullptr)
-		{
-			newBoard.currentLayout[bestMove->from_X][bestMove->from_Y].hasMoved = true;
-			newBoard.currentLayout[bestMove->to_X][bestMove->to_Y] = mChessBoard->currentLayout[bestMove->from_X][bestMove->from_Y];
-			newBoard.currentLayout[bestMove->from_X][bestMove->from_Y] = BoardPiece();
-		}
-
-		GetAllMoveOptions(newBoard, mTeamColour, moves);
+		GetAllMoveOptions(board, (mTeamColour == COLOUR_WHITE ? COLOUR_BLACK : COLOUR_WHITE), moves);
 
 		int currentScore = MaxInt;
 
-		for (int i = 0; i < moves->size(); i++)
+		vector<Move>::iterator it;
+		for (it = moves->begin(); it != moves->end(); it++)
 		{
-			currentScore = min(currentScore, Maximise(newBoard, depth + 1, &moves->at(i), parentHigh));
+			Board newBoard = Board(board);
+			newBoard.currentLayout[it->from_X][it->from_Y].hasMoved = true;
+			newBoard.currentLayout[it->to_X][it->to_Y] = mChessBoard->currentLayout[it->from_X][it->from_Y];
+			newBoard.currentLayout[it->from_X][it->from_Y] = BoardPiece();
+
+			int newScore = Maximise(newBoard, depth + 1, &(*it), parentHigh);
+
+			if (currentScore > newScore)
+			{
+				currentScore = newScore;
+				_minBestMove = new Move((*it));
+				_minBestMove->score = currentScore;
+			}
+
+			/*currentScore = min(currentScore, Maximise(newBoard, depth + 1, &(*it), parentHigh));
 
 			if (bestMove == NULL || bestMove->score < currentScore)
 			{
-				bestMove = &moves->at(i);
+				bestMove = new Move((*it));
 				bestMove->score = currentScore;
-			}
-
-			if (parentHigh >= bestMove->score)
-			{
-				break;
-			}
+			}*/
 		}
 
-		return ScoreTheBoard(board);
+		//for (int i = 0; i < moves->size(); i++)
+		//{
+		//	Board newBoard = Board(board);
+		//	newBoard.currentLayout[moves->at(i).from_X][moves->at(i).from_Y].hasMoved = true;
+		//	newBoard.currentLayout[moves->at(i).to_X][moves->at(i).to_Y] = mChessBoard->currentLayout[moves->at(i).from_X][moves->at(i).from_Y];
+		//	newBoard.currentLayout[moves->at(i).from_X][moves->at(i).from_Y] = BoardPiece();
+
+		//	currentScore = min(currentScore, Maximise(newBoard, depth + 1, &moves->at(i), parentHigh));
+
+		//	if (bestMove == NULL || bestMove->score < currentScore)
+		//	{
+		//		bestMove = new Move(moves->at(i));
+		//		bestMove->score = currentScore;
+		//	}
+
+		//	/*if (parentHigh >= bestMove->score)
+		//	{
+		//		break;
+		//	}*/
+		//}
+
+		return currentScore;
 	}
 }
 
@@ -273,6 +321,8 @@ void ChessPlayerAI::CropMoves(vector<Move>* moves, unsigned int maxNumberOfMoves
 int ChessPlayerAI::ScoreTheBoard(Board boardToScore)
 {
 	//TODO
+
+	return (1 + rand() % static_cast<int>(1000 + 1));
 
 	int score = 0;
 

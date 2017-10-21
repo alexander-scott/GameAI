@@ -33,6 +33,9 @@ protected:
 
 private:
 	int* mDepthToSearch;
+
+	Move* _maxBestMove;
+	Move* _minBestMove;
 };
 
 
