@@ -320,16 +320,16 @@ void ChessPlayer::GetAllMoveOptions(Board boardToTest, COLOUR teamColour, vector
 					break;
 
 					case PIECE_BISHOP:
-						GetDiagonalMoveOptions(piecePosition, currentPiece, boardToTest, moves);
+						GetDiagonalMoveOptions(piecePosition, currentPiece, boardToTest, moves, "BISHOP");
 					break;
 
 					case PIECE_ROOK:
-						GetHorizontalAndVerticalMoveOptions(piecePosition, currentPiece, boardToTest, moves);
+						GetHorizontalAndVerticalMoveOptions(piecePosition, currentPiece, boardToTest, moves, "ROOK");
 					break;
 
 					case PIECE_QUEEN:
-						GetHorizontalAndVerticalMoveOptions(piecePosition, currentPiece, boardToTest, moves);
-						GetDiagonalMoveOptions(piecePosition, currentPiece, boardToTest, moves);
+						GetHorizontalAndVerticalMoveOptions(piecePosition, currentPiece, boardToTest, moves, "ROOK");
+						GetDiagonalMoveOptions(piecePosition, currentPiece, boardToTest, moves, "BISHOP");
 					break;
 
 					case PIECE_KING:
@@ -367,16 +367,16 @@ void ChessPlayer::GetMoveOptions(Vector2D piecePosition, BoardPiece boardPiece, 
 		break;
 
 		case PIECE_BISHOP:
-			GetDiagonalMoveOptions(piecePosition, boardPiece, boardToTest, moves);
+			GetDiagonalMoveOptions(piecePosition, boardPiece, boardToTest, moves, "BISHOP");
 		break;
 
 		case PIECE_ROOK:
-			GetHorizontalAndVerticalMoveOptions(piecePosition, boardPiece, boardToTest, moves);
+			GetHorizontalAndVerticalMoveOptions(piecePosition, boardPiece, boardToTest, moves, "ROOK");
 		break;
 
 		case PIECE_QUEEN:
-			GetHorizontalAndVerticalMoveOptions(piecePosition, boardPiece, boardToTest, moves);
-			GetDiagonalMoveOptions(piecePosition, boardPiece, boardToTest, moves);
+			GetHorizontalAndVerticalMoveOptions(piecePosition, boardPiece, boardToTest, moves, "QUEEN");
+			GetDiagonalMoveOptions(piecePosition, boardPiece, boardToTest, moves, "QUEEN");
 		break;
 
 		case PIECE_KING:
@@ -475,10 +475,10 @@ void ChessPlayer::GetPawnMoveOptions(Vector2D piecePosition, BoardPiece boardPie
 		//if(boardPiece.colour == mTeamColour)
 		//{
 			if(!CheckForCheck(tempBoard, boardPiece.colour))
-				moves->push_back(Move(piecePosition, Vector2D(piecePosition.x, piecePosition.y+pawnDirection)));
+				moves->push_back(Move(piecePosition, Vector2D(piecePosition.x, piecePosition.y+pawnDirection), "PAWN"));
 		//}
 		//else
-			//moves->push_back(Move(piecePosition, Vector2D(piecePosition.x, piecePosition.y+pawnDirection)));
+			//moves->push_back(Move(piecePosition, Vector2D(piecePosition.x, piecePosition.y+pawnDirection), "PAWN"));
 	}
 
 	//Double step FORWARD.
@@ -497,13 +497,13 @@ void ChessPlayer::GetPawnMoveOptions(Vector2D piecePosition, BoardPiece boardPie
 			//{
 				if(!CheckForCheck(tempBoard, boardPiece.colour))
 				{
-					moves->push_back(Move(piecePosition, Vector2D(piecePosition.x, yPos2)));
+					moves->push_back(Move(piecePosition, Vector2D(piecePosition.x, yPos2), "PAWN"));
 
 
 				}
 			//}
 			//else
-				//moves->push_back(Move(piecePosition, Vector2D(piecePosition.x, yPos2)));
+				//moves->push_back(Move(piecePosition, Vector2D(piecePosition.x, yPos2), "PAWN"));
 		}
 	}
 
@@ -526,10 +526,10 @@ void ChessPlayer::GetPawnMoveOptions(Vector2D piecePosition, BoardPiece boardPie
 			//if(boardPiece.colour == mTeamColour)
 			//{
 				if(!CheckForCheck(tempBoard, boardPiece.colour))
-					moves->push_back(Move(piecePosition, Vector2D(piecePosition.x-1, piecePosition.y+pawnDirection)));
+					moves->push_back(Move(piecePosition, Vector2D(piecePosition.x-1, piecePosition.y+pawnDirection), "PAWN"));
 			//}
 			//else
-				//moves->push_back(Move(piecePosition, Vector2D(piecePosition.x-1, piecePosition.y+pawnDirection)));
+				//moves->push_back(Move(piecePosition, Vector2D(piecePosition.x-1, piecePosition.y+pawnDirection), "PAWN"));
 		}
 
 		//Rest the board.
@@ -545,10 +545,10 @@ void ChessPlayer::GetPawnMoveOptions(Vector2D piecePosition, BoardPiece boardPie
 			//if(boardPiece.colour == mTeamColour)
 			//{
 				if(!CheckForCheck(tempBoard, boardPiece.colour))
-					moves->push_back(Move(piecePosition, Vector2D(piecePosition.x+1, piecePosition.y+pawnDirection)));
+					moves->push_back(Move(piecePosition, Vector2D(piecePosition.x+1, piecePosition.y+pawnDirection), "PAWN"));
 			//}
 			//else
-				//moves->push_back(Move(piecePosition, Vector2D(piecePosition.x+1, piecePosition.y+pawnDirection)));
+				//moves->push_back(Move(piecePosition, Vector2D(piecePosition.x+1, piecePosition.y+pawnDirection), "PAWN"));
 		}
 	}
 
@@ -572,10 +572,10 @@ void ChessPlayer::GetPawnMoveOptions(Vector2D piecePosition, BoardPiece boardPie
 				//if(boardPiece.colour == mTeamColour)
 				//{
 					if(!CheckForCheck(tempBoard, boardPiece.colour))
-						moves->push_back(Move(piecePosition, Vector2D(xPos, piecePosition.y+pawnDirection)));
+						moves->push_back(Move(piecePosition, Vector2D(xPos, piecePosition.y+pawnDirection), "PAWN"));
 				//}
 				//else
-					//moves->push_back(Move(piecePosition, Vector2D(xPos, piecePosition.y+pawnDirection)));
+					//moves->push_back(Move(piecePosition, Vector2D(xPos, piecePosition.y+pawnDirection), "PAWN"));
 			}
 		}
 
@@ -596,10 +596,10 @@ void ChessPlayer::GetPawnMoveOptions(Vector2D piecePosition, BoardPiece boardPie
 				//if(boardPiece.colour == mTeamColour)
 				//{
 					if(!CheckForCheck(tempBoard, boardPiece.colour))
-						moves->push_back(Move(piecePosition, Vector2D(xPos, piecePosition.y+pawnDirection)));
+						moves->push_back(Move(piecePosition, Vector2D(xPos, piecePosition.y+pawnDirection), "PAWN"));
 				//}
 				//else
-					//moves->push_back(Move(piecePosition, Vector2D(xPos, piecePosition.y+pawnDirection)));
+					//moves->push_back(Move(piecePosition, Vector2D(xPos, piecePosition.y+pawnDirection), "PAWN"));
 			}
 		}
 	}
@@ -607,7 +607,7 @@ void ChessPlayer::GetPawnMoveOptions(Vector2D piecePosition, BoardPiece boardPie
 
 //--------------------------------------------------------------------------------------------------
 
-void ChessPlayer::GetHorizontalAndVerticalMoveOptions(Vector2D piecePosition, BoardPiece boardPiece, Board boardToTest, vector<Move>* moves)
+void ChessPlayer::GetHorizontalAndVerticalMoveOptions(Vector2D piecePosition, BoardPiece boardPiece, Board boardToTest, vector<Move>* moves, string pieceName)
 {
 	Move move;
 
@@ -615,7 +615,7 @@ void ChessPlayer::GetHorizontalAndVerticalMoveOptions(Vector2D piecePosition, Bo
 	for(int yPos = (int)piecePosition.y+1; yPos < kBoardDimensions; yPos++)
 	{
 		//Keep checking moves until one is invalid.
-		move = Move(piecePosition, Vector2D(piecePosition.x, yPos));
+		move = Move(piecePosition, Vector2D(piecePosition.x, yPos), pieceName);
 		if(CheckMoveOptionValidityAndStoreMove(move, boardPiece.colour, boardToTest, moves) == false)
 			break;
 	}
@@ -624,7 +624,7 @@ void ChessPlayer::GetHorizontalAndVerticalMoveOptions(Vector2D piecePosition, Bo
 	for(int yPos = (int)piecePosition.y-1; yPos >= 0; yPos--)
 	{
 		//Keep checking moves until one is invalid.
-		move = Move(piecePosition, Vector2D(piecePosition.x, yPos));
+		move = Move(piecePosition, Vector2D(piecePosition.x, yPos), pieceName);
 		if(CheckMoveOptionValidityAndStoreMove(move, boardPiece.colour, boardToTest, moves) == false)
 			break;
 	}
@@ -633,7 +633,7 @@ void ChessPlayer::GetHorizontalAndVerticalMoveOptions(Vector2D piecePosition, Bo
 	for(int xPos = (int)piecePosition.x-1; xPos >= 0; xPos--)
 	{
 		//Keep checking moves until one is invalid.
-		move = Move(piecePosition, Vector2D(xPos, piecePosition.y));
+		move = Move(piecePosition, Vector2D(xPos, piecePosition.y), pieceName);
 		if(CheckMoveOptionValidityAndStoreMove(move, boardPiece.colour, boardToTest, moves) == false)
 			break;
 	}
@@ -642,7 +642,7 @@ void ChessPlayer::GetHorizontalAndVerticalMoveOptions(Vector2D piecePosition, Bo
 	for(int xPos = (int)piecePosition.x+1; xPos < kBoardDimensions; xPos++)
 	{
 		//Keep checking moves until one is invalid.
-		move = Move(piecePosition, Vector2D(xPos, piecePosition.y));
+		move = Move(piecePosition, Vector2D(xPos, piecePosition.y), pieceName);
 		if(CheckMoveOptionValidityAndStoreMove(move, boardPiece.colour, boardToTest, moves) == false)
 			break;
 	}
@@ -650,7 +650,7 @@ void ChessPlayer::GetHorizontalAndVerticalMoveOptions(Vector2D piecePosition, Bo
 
 //--------------------------------------------------------------------------------------------------
 
-void ChessPlayer::GetDiagonalMoveOptions(Vector2D piecePosition, BoardPiece boardPiece, Board boardToTest, vector<Move>* moves)
+void ChessPlayer::GetDiagonalMoveOptions(Vector2D piecePosition, BoardPiece boardPiece, Board boardToTest, vector<Move>* moves, string pieceName)
 {
 	Move move;
 
@@ -658,7 +658,7 @@ void ChessPlayer::GetDiagonalMoveOptions(Vector2D piecePosition, BoardPiece boar
 	for(int yPos = (int)piecePosition.y-1, xPos = (int)piecePosition.x-1; yPos >= 0 && xPos >= 0; yPos--, xPos--)
 	{
 		//Keep checking moves until one is invalid.
-		move = Move(piecePosition, Vector2D(xPos, yPos));
+		move = Move(piecePosition, Vector2D(xPos, yPos), pieceName);
 		if(CheckMoveOptionValidityAndStoreMove(move, boardPiece.colour, boardToTest, moves) == false)
 			break;
 	}
@@ -667,7 +667,7 @@ void ChessPlayer::GetDiagonalMoveOptions(Vector2D piecePosition, BoardPiece boar
 	for(int yPos = (int)piecePosition.y-1, xPos = (int)piecePosition.x+1; yPos >= 0 && xPos < kBoardDimensions; yPos--, xPos++)
 	{
 		//Keep checking moves until one is invalid.
-		move = Move(piecePosition, Vector2D(xPos, yPos));
+		move = Move(piecePosition, Vector2D(xPos, yPos), pieceName);
 		if(CheckMoveOptionValidityAndStoreMove(move, boardPiece.colour, boardToTest, moves) == false)
 			break;
 	}
@@ -676,7 +676,7 @@ void ChessPlayer::GetDiagonalMoveOptions(Vector2D piecePosition, BoardPiece boar
 	for(int yPos = (int)piecePosition.y+1, xPos = (int)piecePosition.x-1; yPos < kBoardDimensions && xPos >= 0; yPos++, xPos--)
 	{
 		//Keep checking moves until one is invalid.
-		move = Move(piecePosition, Vector2D(xPos, yPos));
+		move = Move(piecePosition, Vector2D(xPos, yPos), pieceName);
 		if(CheckMoveOptionValidityAndStoreMove(move, boardPiece.colour, boardToTest, moves) == false)
 			break;
 	}
@@ -685,7 +685,7 @@ void ChessPlayer::GetDiagonalMoveOptions(Vector2D piecePosition, BoardPiece boar
 	for(int yPos = (int)piecePosition.y+1, xPos = (int)piecePosition.x+1; yPos < kBoardDimensions && xPos < kBoardDimensions; yPos++, xPos++)
 	{
 		//Keep checking moves until one is invalid.
-		move = Move(piecePosition, Vector2D(xPos, yPos));
+		move = Move(piecePosition, Vector2D(xPos, yPos), pieceName);
 		if(CheckMoveOptionValidityAndStoreMove(move, boardPiece.colour, boardToTest, moves) == false)
 			break;
 	}
@@ -698,7 +698,7 @@ void ChessPlayer::GetKnightMoveOptions(Vector2D piecePosition, BoardPiece boardP
 	Move move;
 
 	//Moves to the RIGHT.
-	move = Move(piecePosition, Vector2D(piecePosition.x+2, piecePosition.y+1));
+	move = Move(piecePosition, Vector2D(piecePosition.x+2, piecePosition.y+1), "KNIGHT");
 	CheckMoveOptionValidityAndStoreMove(move, boardPiece.colour, boardToTest, moves);
 
 	move.to_Y = (int)piecePosition.y-1;
@@ -744,7 +744,7 @@ void ChessPlayer::GetKingMoveOptions(Vector2D piecePosition, BoardPiece boardPie
 			{
 				//Check if move is valid and store it. We dont care about the return value as we are only
 				// checking one move in each direction.
-				move = Move(piecePosition, Vector2D(xPos, yPos));
+				move = Move(piecePosition, Vector2D(xPos, yPos), "KING");
 				CheckMoveOptionValidityAndStoreMove(move, boardPiece.colour, boardToTest, moves);
 			}
 		}
@@ -784,7 +784,7 @@ void ChessPlayer::GetKingMoveOptions(Vector2D piecePosition, BoardPiece boardPie
 
 					//Check if the final position is valid.
 					if( canCastle )
-						CheckMoveOptionValidityAndStoreMove(Move(piecePosition, Vector2D(piecePosition.x+2, piecePosition.y)), boardPiece.colour, boardToTest, moves);
+						CheckMoveOptionValidityAndStoreMove(Move(piecePosition, Vector2D(piecePosition.x+2, piecePosition.y), "KING"), boardPiece.colour, boardToTest, moves);
 				}
 			}
 
@@ -811,7 +811,7 @@ void ChessPlayer::GetKingMoveOptions(Vector2D piecePosition, BoardPiece boardPie
 
 					//Check if the final position is valid.
 					if( canCastle )
-						CheckMoveOptionValidityAndStoreMove(Move(piecePosition, Vector2D(piecePosition.x-2, piecePosition.y)), boardPiece.colour, boardToTest, moves);
+						CheckMoveOptionValidityAndStoreMove(Move(piecePosition, Vector2D(piecePosition.x-2, piecePosition.y), "KING"), boardPiece.colour, boardToTest, moves);
 				}
 			}
 		}

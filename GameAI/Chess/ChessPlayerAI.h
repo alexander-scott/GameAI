@@ -32,6 +32,9 @@ protected:
 	int  ScoreTheBoard(Board boardToScore);
 
 private:
+	int EvaluatePawn(Board board, int xPos, int yPos);
+
+private:
 	int* mDepthToSearch;
 
 	Move* _maxBestMove;

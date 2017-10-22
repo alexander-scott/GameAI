@@ -127,27 +127,30 @@ struct Move
 	int to_X;
 	int to_Y;
 	int score;	//Required only for ordering moves.
+	std::string pieceName;
 
 	Move()
 	{
 	}
 
-	Move(int fromX, int fromY, int toX, int toY)
+	Move(int fromX, int fromY, int toX, int toY, string name)
 	{
 		from_X = fromX;
 		from_Y = fromY;
 		to_X   = toX;
 		to_Y   = toY;
 		score  = 0;
+		pieceName = name;
 	};
 
-	Move(Vector2D fromPosition, Vector2D toPosition)
+	Move(Vector2D fromPosition, Vector2D toPosition, string name = "")
 	{
 		from_X = (int)fromPosition.x;
 		from_Y = (int)fromPosition.y;
 		to_X   = (int)toPosition.x;
 		to_Y   = (int)toPosition.y;
 		score  = 0;
+		pieceName = name;
 	};
 };
 
@@ -177,6 +180,7 @@ struct ChessMove
 	Move   theMove;
 	string startPosition;
 	string endPosition;
+	string pieceName;
 };
 
 //--------------------------------------------------------------------------------------------------

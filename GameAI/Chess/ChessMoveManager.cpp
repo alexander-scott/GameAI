@@ -66,6 +66,8 @@ void MoveManager::StoreMove(Move move)
 	newMove.startPosition = fromMove;
 	newMove.endPosition   = toMove;
 
+	newMove.pieceName = move.pieceName;
+
 	//We still want the original move stored.
 	newMove.theMove = move;
 
@@ -112,7 +114,7 @@ string MoveManager::ConvertBoardPositionIntToLetter(int numericalValue)
 
 void MoveManager::OutputMove(ChessMove move)
 {
-	cout << endl << move.startPosition << " -> " << move.endPosition;
+	cout << endl << move.pieceName << " " << move.startPosition << " -> " << move.endPosition;
 }
 
 //--------------------------------------------------------------------------------------------------

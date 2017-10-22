@@ -190,41 +190,7 @@ int ChessPlayerAI::Maximise(Board board, int depth, Move* bestMove, int parentLo
 				_maxBestMove = new Move((*it));
 				_maxBestMove->score = currentScore;
 			}
-
-			//currentScore = max(currentScore, Minimise(newBoard, depth + 1, &(*it), parentLow));
-
-			/*if (bestMove == NULL || bestMove->score > currentScore)
-			{
-				bestMove = new Move((*it));
-				bestMove->score = currentScore;
-			}*/
-
-			/*if (parentLow <= bestMove->score)
-			{
-			break;
-			}	*/
 		}
-
-		//for (int i = 0; i < moves->size(); i++)
-		//{
-		//	Board newBoard = Board(board);
-		//	newBoard.currentLayout[moves->at(i).from_X][moves->at(i).from_Y].hasMoved = true;
-		//	newBoard.currentLayout[moves->at(i).to_X][moves->at(i).to_Y] = mChessBoard->currentLayout[moves->at(i).from_X][moves->at(i).from_Y];
-		//	newBoard.currentLayout[moves->at(i).from_X][moves->at(i).from_Y] = BoardPiece();
-
-		//	currentScore = max(currentScore, Minimise(newBoard, depth + 1, &moves->at(i), parentLow));
-
-		//	if (bestMove == NULL || bestMove->score > currentScore)
-		//	{
-		//		bestMove = new Move(moves->at(i));
-		//		bestMove->score = currentScore;
-		//	}
-
-		//	/*if (parentLow <= bestMove->score)
-		//	{
-		//		break;
-		//	}	*/
-		//}
 
 		return currentScore;
 	}
@@ -262,36 +228,7 @@ int ChessPlayerAI::Minimise(Board board, int depth, Move* bestMove, int parentHi
 				_minBestMove = new Move((*it));
 				_minBestMove->score = currentScore;
 			}
-
-			/*currentScore = min(currentScore, Maximise(newBoard, depth + 1, &(*it), parentHigh));
-
-			if (bestMove == NULL || bestMove->score < currentScore)
-			{
-				bestMove = new Move((*it));
-				bestMove->score = currentScore;
-			}*/
 		}
-
-		//for (int i = 0; i < moves->size(); i++)
-		//{
-		//	Board newBoard = Board(board);
-		//	newBoard.currentLayout[moves->at(i).from_X][moves->at(i).from_Y].hasMoved = true;
-		//	newBoard.currentLayout[moves->at(i).to_X][moves->at(i).to_Y] = mChessBoard->currentLayout[moves->at(i).from_X][moves->at(i).from_Y];
-		//	newBoard.currentLayout[moves->at(i).from_X][moves->at(i).from_Y] = BoardPiece();
-
-		//	currentScore = min(currentScore, Maximise(newBoard, depth + 1, &moves->at(i), parentHigh));
-
-		//	if (bestMove == NULL || bestMove->score < currentScore)
-		//	{
-		//		bestMove = new Move(moves->at(i));
-		//		bestMove->score = currentScore;
-		//	}
-
-		//	/*if (parentHigh >= bestMove->score)
-		//	{
-		//		break;
-		//	}*/
-		//}
 
 		return currentScore;
 	}
@@ -321,10 +258,12 @@ void ChessPlayerAI::CropMoves(vector<Move>* moves, unsigned int maxNumberOfMoves
 int ChessPlayerAI::ScoreTheBoard(Board boardToScore)
 {
 	//TODO
+	//return (1 + rand() % static_cast<int>(1000 + 1));
 
-	return (1 + rand() % static_cast<int>(1000 + 1));
+	float numQueensPlayer = 0, numQueensAI = 0, numRooksPlayer = 0, numRooksAI = 0, numBishopsPlayer = 0, 
+		numBishopsAI = 0, numKnightsPlayer = 0, numKnightsAI = 0, numPawnsPlayer = 0, numPawnsAI = 0;
 
-	int score = 0;
+	float score = 0;
 
 	for (int x = 0; x < kBoardDimensions; x++)
 	{
@@ -332,68 +271,96 @@ int ChessPlayerAI::ScoreTheBoard(Board boardToScore)
 		{
 			//Check for pieces.
 			BoardPiece currentPiece = boardToScore.currentLayout[x][y];
+
+			// AI
 			if (currentPiece.colour == mTeamColour && currentPiece.piece != PIECE_NONE)
 			{
 				switch (currentPiece.piece)
 				{
 				case PIECE_PAWN:
-					score += 100;
+					score += pawnScoreTableAI[x][y];
+					numPawnsAI++;
 					break;
 
 				case PIECE_KNIGHT:
-					score += 300;
+					score += knightScoreTableAI[x][y];
+					numKnightsAI++;
 					break;
 
 				case PIECE_BISHOP:
-					score += 325;
+					score += bishopScoreTableAI[x][y];
+					numBishopsAI++;
 					break;
 
 				case PIECE_ROOK:
-					score += 500;
+					score += rookScoreTableAI[x][y];
+					numRooksAI++;
 					break;
 
 				case PIECE_QUEEN:
-					score += 900;
+					score += queenScoreTableAI[x][y];
+					numQueensAI++;
 					break;
 
 				case PIECE_KING:
-					score += 1000000;
+					score += MaxInt;
+					score += kingMiddleGameScoreTableAI[x][y];
 					break;
 				}
 			}
+
+			// PLAYER
 			if (currentPiece.colour != mTeamColour && currentPiece.piece != PIECE_NONE)
 			{
 				switch (currentPiece.piece)
 				{
 				case PIECE_PAWN:
-					score -= 100;
+					score -= pawnScoreTablePlayer[x][y];
+					numPawnsPlayer++;
 					break;
 
 				case PIECE_KNIGHT:
-					score -= 300;
+					score -= knightScoreTableAI[x][y];
+					numKnightsPlayer++;
 					break;
 
 				case PIECE_BISHOP:
-					score -= 325;
+					score -= bishopScoreTablePlayer[x][y];
+					numBishopsPlayer++;
 					break;
 
 				case PIECE_ROOK:
-					score -= 500;
+					score -= rookScoreTablePlayer[x][y];
+					numRooksPlayer++;
 					break;
 
 				case PIECE_QUEEN:
-					score -= 900;
+					score -= queenScoreTablePlayer[x][y];
+					numQueensPlayer++;
 					break;
 
 				case PIECE_KING:
-					score -= 1000000;
+					score -= MaxInt;
+					score -= kingMiddleGameScoreTablePlayer[x][y];
 					break;
 				}
 			}
 		}
 	}
 
+	score += (9000 * (numQueensAI - numQueensPlayer)) +
+			(5000 * (numRooksAI - numRooksPlayer)) +
+			(3000 *(numBishopsAI - numBishopsPlayer + numKnightsAI - numKnightsPlayer)) +
+			(1000 * (numPawnsAI - numPawnsPlayer));
+
 	return score;
+}
+
+int ChessPlayerAI::EvaluatePawn(Board board, int xPos, int yPos)
+{
+
+
+	return 0;
 }
 
 //--------------------------------------------------------------------------------------------------

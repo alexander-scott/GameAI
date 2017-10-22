@@ -41,8 +41,8 @@ protected:
 	bool CheckMoveOptionValidityAndStoreMove(Move moveToCheck, COLOUR pieceColour, Board boardToTest, vector<Move>* moves);
 
 	void GetPawnMoveOptions(Vector2D piecePosition, BoardPiece boardPiece, Board boardToTest, vector<Move>* moves);
-	void GetHorizontalAndVerticalMoveOptions(Vector2D piecePosition, BoardPiece boardPiece, Board boardToTest, vector<Move>* moves);
-	void GetDiagonalMoveOptions(Vector2D piecePosition, BoardPiece boardPiece, Board boardToTest, vector<Move>* moves);
+	void GetHorizontalAndVerticalMoveOptions(Vector2D piecePosition, BoardPiece boardPiece, Board boardToTest, vector<Move>* moves, string pieceName);
+	void GetDiagonalMoveOptions(Vector2D piecePosition, BoardPiece boardPiece, Board boardToTest, vector<Move>* moves, string pieceName);
 	void GetKnightMoveOptions(Vector2D piecePosition, BoardPiece boardPiece, Board boardToTest, vector<Move>* moves);
 	void GetKingMoveOptions(Vector2D piecePosition, BoardPiece boardPiece, Board boardToTest, vector<Move>* moves);
 
