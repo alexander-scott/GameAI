@@ -303,7 +303,7 @@ int ChessPlayerAI::ScoreTheBoard(Board boardToScore)
 					break;
 
 				case PIECE_KING:
-					score += MaxInt;
+					score += 1000000;
 					score += kingMiddleGameScoreTableAI[x][y];
 					break;
 				}
@@ -340,7 +340,7 @@ int ChessPlayerAI::ScoreTheBoard(Board boardToScore)
 					break;
 
 				case PIECE_KING:
-					score -= MaxInt;
+					score -= 1000000;
 					score -= kingMiddleGameScoreTablePlayer[x][y];
 					break;
 				}
@@ -348,10 +348,10 @@ int ChessPlayerAI::ScoreTheBoard(Board boardToScore)
 		}
 	}
 
-	score += (9000 * (numQueensAI - numQueensPlayer)) +
-			(5000 * (numRooksAI - numRooksPlayer)) +
-			(3000 *(numBishopsAI - numBishopsPlayer + numKnightsAI - numKnightsPlayer)) +
-			(1000 * (numPawnsAI - numPawnsPlayer));
+	score += (200 * (numQueensAI - numQueensPlayer)) +
+			(150 * (numRooksAI - numRooksPlayer)) +
+			(80 *(numBishopsAI - numBishopsPlayer + numKnightsAI - numKnightsPlayer)) +
+			(10 * (numPawnsAI - numPawnsPlayer));
 
 	return score;
 }
