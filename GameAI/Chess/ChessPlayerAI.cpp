@@ -136,7 +136,6 @@ bool ChessPlayerAI::TakeATurn(SDL_Event e)
 	DWORD currentTime	 = 0;
 
 	_maxBestMove = nullptr;
-	_minBestMove = nullptr;
 
 	MiniMax(*mChessBoard, 0, _maxBestMove);
 
@@ -153,7 +152,7 @@ bool ChessPlayerAI::TakeATurn(SDL_Event e)
 
 int ChessPlayerAI::MiniMax(Board board, int depth, Move* bestMove)
 {
-	int score = Maximise(board, depth, _maxBestMove, MaxInt);
+	int score = Maximise(board, depth, _maxBestMove, 10000000);
 	return score;
 }
 
@@ -161,39 +160,51 @@ int ChessPlayerAI::MiniMax(Board board, int depth, Move* bestMove)
 
 int ChessPlayerAI::Maximise(Board board, int depth, Move* bestMove, int parentLow)
 {
-	//TODO: Code Maximise function.
-
-	if (depth >= *mDepthToSearch) //if depth limit is reached
-	{
+	// If the depth limit is reached, don't go any deeper and return the score of the board
+	if (depth >= *mDepthToSearch) 
 		return ScoreTheBoard(board);
-	}
-	else 
+
+	// Get all the available move options for the current board
+	vector<Move>* moves = new vector<Move>;
+	GetAllMoveOptions(board, (mTeamColour == COLOUR_WHITE ? COLOUR_WHITE : COLOUR_BLACK), moves);
+
+	int alpha = -10000000; // Set alpha to low num
+	Move* bestChildMove = nullptr;
+
+	// Iterate through every available move
+	vector<Move>::iterator it;
+	for (it = moves->begin(); it != moves->end(); it++) 
 	{
-		vector<Move>* moves = new vector<Move>;
-		GetAllMoveOptions(board, (mTeamColour == COLOUR_WHITE ? COLOUR_WHITE : COLOUR_BLACK), moves);
+		// Create a copy of the board and then perform the current move
+		Board newBoard = Board(board);
+		newBoard.currentLayout[it->from_X][it->from_Y].hasMoved = true;
+		newBoard.currentLayout[it->to_X][it->to_Y] = mChessBoard->currentLayout[it->from_X][it->from_Y];
+		newBoard.currentLayout[it->from_X][it->from_Y] = BoardPiece();
 
-		int currentScore = -MaxInt;
+		// Go down a layer and find the minimum score available for the enemy (PLAYER). Set it to alpha if it is greater than a previous alpha.
+		alpha = max(alpha, Minimise(newBoard, depth + 1, bestChildMove, alpha));
 
-		vector<Move>::iterator it;
-		for (it = moves->begin(); it != moves->end(); it++) 
+		// If the new alpha is greater than the previous best score (or hasn't been set yet)
+		if (bestChildMove == nullptr || alpha > bestChildMove->score)
 		{
-			Board newBoard = Board(board);
-			newBoard.currentLayout[it->from_X][it->from_Y].hasMoved = true;
-			newBoard.currentLayout[it->to_X][it->to_Y] = mChessBoard->currentLayout[it->from_X][it->from_Y];
-			newBoard.currentLayout[it->from_X][it->from_Y] = BoardPiece();
-
-			int newScore = Minimise(newBoard, depth + 1, &(*it), parentLow);
-
-			if (currentScore < newScore)
-			{
-				currentScore = newScore;
-				_maxBestMove = new Move((*it));
-				_maxBestMove->score = currentScore;
-			}
+			bestChildMove = new Move((*it));
+			bestChildMove->score = alpha;
 		}
 
-		return currentScore;
+		// If a move is found to be worse than the best score currently stored, return out of the tree early.
+		if (alpha > parentLow)
+		{
+			return alpha;
+		}
 	}
+
+	// If we're on the top layer, return the best move available
+	if (depth == 0)
+	{
+		_maxBestMove = bestChildMove;
+	}
+
+	return alpha;
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -202,36 +213,39 @@ int ChessPlayerAI::Minimise(Board board, int depth, Move* bestMove, int parentHi
 {
 	//TODO: Code Minimise function.
 
-	if (depth >= *mDepthToSearch) {//if depth limit is reached
+	//if depth limit is reached
+	if (depth >= *mDepthToSearch) 
 		return ScoreTheBoard(board);
-	}
-	else
+
+	vector<Move>* moves = new vector<Move>;
+	GetAllMoveOptions(board, (mTeamColour == COLOUR_WHITE ? COLOUR_BLACK : COLOUR_WHITE), moves);
+
+	int alpha = 10000000;
+	Move* bestChildMove = nullptr;
+
+	vector<Move>::iterator it;
+	for (it = moves->begin(); it != moves->end(); it++)
 	{
-		vector<Move>* moves = new vector<Move>;
-		GetAllMoveOptions(board, (mTeamColour == COLOUR_WHITE ? COLOUR_BLACK : COLOUR_WHITE), moves);
+		Board newBoard = Board(board);
+		newBoard.currentLayout[it->from_X][it->from_Y].hasMoved = true;
+		newBoard.currentLayout[it->to_X][it->to_Y] = mChessBoard->currentLayout[it->from_X][it->from_Y];
+		newBoard.currentLayout[it->from_X][it->from_Y] = BoardPiece();
 
-		int currentScore = MaxInt;
+		alpha = min(alpha, Maximise(newBoard, depth + 1, &(*it), alpha));
 
-		vector<Move>::iterator it;
-		for (it = moves->begin(); it != moves->end(); it++)
+		if (bestChildMove == nullptr || alpha < bestChildMove->score)
 		{
-			Board newBoard = Board(board);
-			newBoard.currentLayout[it->from_X][it->from_Y].hasMoved = true;
-			newBoard.currentLayout[it->to_X][it->to_Y] = mChessBoard->currentLayout[it->from_X][it->from_Y];
-			newBoard.currentLayout[it->from_X][it->from_Y] = BoardPiece();
-
-			int newScore = Maximise(newBoard, depth + 1, &(*it), parentHigh);
-
-			if (currentScore > newScore)
-			{
-				currentScore = newScore;
-				_minBestMove = new Move((*it));
-				_minBestMove->score = currentScore;
-			}
+			bestChildMove = new Move((*it));
+			bestChildMove->score = alpha;
 		}
 
-		return currentScore;
+		if (alpha < parentHigh)
+		{
+			return alpha;
+		}
 	}
+
+	return alpha;
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -354,13 +368,6 @@ int ChessPlayerAI::ScoreTheBoard(Board boardToScore)
 			(10 * (numPawnsAI - numPawnsPlayer));
 
 	return score;
-}
-
-int ChessPlayerAI::EvaluatePawn(Board board, int xPos, int yPos)
-{
-
-
-	return 0;
 }
 
 //--------------------------------------------------------------------------------------------------
