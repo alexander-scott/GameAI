@@ -8,6 +8,7 @@
 #include "Conway\GameScreen_Conway.h"
 #include "Lunar\GameScreen_Lunar.h"
 #include "Conway\GameScreen_Conway.h"
+#include "RainbowIslands\GameScreen_RainbowIslands.h"
 
 //--------------------------------------------------------------------------------------------------
 
@@ -57,6 +58,7 @@ void GameScreenManager::ChangeScreen(SCREENS newScreen)
 	GameScreen_Chess*			tempChessScreen;
 	GameScreen_Conway*			tempConwayScreen;
 	GameScreen_Lunar*			tempLunarScreen;
+	GameScreen_RainbowIslands*	tempRainbowScreen;
 
 	//Initialise the new screen.
 	mCurrentScreenID = newScreen;
@@ -90,6 +92,9 @@ void GameScreenManager::ChangeScreen(SCREENS newScreen)
 		break;
 
 		case SCREEN_RAINBOWISLANDS:
+			tempRainbowScreen = new GameScreen_RainbowIslands(mRenderer);
+			mCurrentScreen = (GameScreen*)tempRainbowScreen;
+			tempRainbowScreen = NULL;
 		break;
 
 		default:
