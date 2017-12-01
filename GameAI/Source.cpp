@@ -17,6 +17,7 @@
 #include "Conway\ConwayConstants.h"
 #include "Lunar\LunarConstants.h"
 #include "RainbowIslands\Constants_RainbowIslands.h"
+#include "Clustering\ClusteringConstants.h"
 
 
 using namespace::std;

@@ -28,6 +28,12 @@
     <Filter Include="Rainbow Islands">
       <UniqueIdentifier>{c9390343-51cf-40aa-9fbc-9812215bfd40}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Clustering">
+      <UniqueIdentifier>{a2fdf15e-4e2e-4475-9dd8-75b8ea1a70a4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Rainbow Islands\NewItems">
+      <UniqueIdentifier>{402b1947-655e-49fc-91a7-50c5afc0c148}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="C2DMatrix.h">
@@ -126,6 +132,36 @@
     <ClInclude Include="RainbowIslands\VirtualJoypad.h">
       <Filter>Rainbow Islands</Filter>
     </ClInclude>
+    <ClInclude Include="Clustering\ClusteringConstants.h">
+      <Filter>Clustering</Filter>
+    </ClInclude>
+    <ClInclude Include="Clustering\GameScreen_Clustering.h">
+      <Filter>Clustering</Filter>
+    </ClInclude>
+    <ClInclude Include="utils.h">
+      <Filter>Rainbow Islands\NewItems</Filter>
+    </ClInclude>
+    <ClInclude Include="genes.h">
+      <Filter>Rainbow Islands\NewItems</Filter>
+    </ClInclude>
+    <ClInclude Include="phenotype.h">
+      <Filter>Rainbow Islands\NewItems</Filter>
+    </ClInclude>
+    <ClInclude Include="CInnovation.h">
+      <Filter>Rainbow Islands\NewItems</Filter>
+    </ClInclude>
+    <ClInclude Include="genotype.h">
+      <Filter>Rainbow Islands\NewItems</Filter>
+    </ClInclude>
+    <ClInclude Include="CSpecies.h">
+      <Filter>Rainbow Islands\NewItems</Filter>
+    </ClInclude>
+    <ClInclude Include="CParams.h">
+      <Filter>Rainbow Islands\NewItems</Filter>
+    </ClInclude>
+    <ClInclude Include="cga.h">
+      <Filter>Rainbow Islands\NewItems</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GameScreen.cpp">
@@ -205,6 +241,27 @@
     </ClCompile>
     <ClCompile Include="RainbowIslands\VirtualJoypad.cpp">
       <Filter>Rainbow Islands</Filter>
+    </ClCompile>
+    <ClCompile Include="Clustering\GameScreen_Clustering.cpp">
+      <Filter>Clustering</Filter>
+    </ClCompile>
+    <ClCompile Include="phenotype.cpp">
+      <Filter>Rainbow Islands\NewItems</Filter>
+    </ClCompile>
+    <ClCompile Include="CInnovation.cpp">
+      <Filter>Rainbow Islands\NewItems</Filter>
+    </ClCompile>
+    <ClCompile Include="genotype.cpp">
+      <Filter>Rainbow Islands\NewItems</Filter>
+    </ClCompile>
+    <ClCompile Include="CSpecies.cpp">
+      <Filter>Rainbow Islands\NewItems</Filter>
+    </ClCompile>
+    <ClCompile Include="CParams.cpp">
+      <Filter>Rainbow Islands\NewItems</Filter>
+    </ClCompile>
+    <ClCompile Include="cga.cpp">
+      <Filter>Rainbow Islands\NewItems</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

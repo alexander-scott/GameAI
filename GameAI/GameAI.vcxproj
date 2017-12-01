@@ -67,23 +67,32 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="C2DMatrix.h" />
+    <ClInclude Include="cga.h" />
     <ClInclude Include="Chess\ChessCommons.h" />
     <ClInclude Include="Chess\ChessConstants.h" />
     <ClInclude Include="Chess\ChessMoveManager.h" />
     <ClInclude Include="Chess\ChessPlayerAI.h" />
     <ClInclude Include="Chess\GameScreen_Chess.h" />
     <ClInclude Include="Chess\ChessPlayer.h" />
+    <ClInclude Include="CInnovation.h" />
+    <ClInclude Include="Clustering\ClusteringConstants.h" />
+    <ClInclude Include="Clustering\GameScreen_Clustering.h" />
     <ClInclude Include="Collisions.h" />
     <ClInclude Include="Commons.h" />
     <ClInclude Include="Constants.h" />
     <ClInclude Include="Conway\ConwayConstants.h" />
     <ClInclude Include="Conway\GameScreen_Conway.h" />
+    <ClInclude Include="CSpecies.h" />
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="GameScreen.h" />
     <ClInclude Include="GameScreenManager.h" />
+    <ClInclude Include="genes.h" />
+    <ClInclude Include="genotype.h" />
     <ClInclude Include="Lunar\GameScreen_Lunar.h" />
     <ClInclude Include="Lunar\LunarConstants.h" />
     <ClInclude Include="Lunar\LunarLander.h" />
+    <ClInclude Include="CParams.h" />
+    <ClInclude Include="phenotype.h" />
     <ClInclude Include="RainbowIslands\Character.h" />
     <ClInclude Include="RainbowIslands\CharacterBub.h" />
     <ClInclude Include="RainbowIslands\CharacterCaterpillar.h" />
@@ -98,19 +107,27 @@
     <ClInclude Include="Texture2D.h" />
     <ClInclude Include="TinyXML\tinystr.h" />
     <ClInclude Include="TinyXML\tinyxml.h" />
+    <ClInclude Include="utils.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="cga.cpp" />
     <ClCompile Include="Chess\ChessMoveManager.cpp" />
     <ClCompile Include="Chess\ChessPlayerAI.cpp" />
     <ClCompile Include="Chess\GameScreen_Chess.cpp" />
     <ClCompile Include="Chess\ChessPlayer.cpp" />
+    <ClCompile Include="CInnovation.cpp" />
+    <ClCompile Include="Clustering\GameScreen_Clustering.cpp" />
     <ClCompile Include="Collisions.cpp" />
     <ClCompile Include="Conway\GameScreen_Conway.cpp" />
+    <ClCompile Include="CSpecies.cpp" />
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="GameScreen.cpp" />
     <ClCompile Include="GameScreenManager.cpp" />
+    <ClCompile Include="genotype.cpp" />
     <ClCompile Include="Lunar\GameScreen_Lunar.cpp" />
     <ClCompile Include="Lunar\LunarLander.cpp" />
+    <ClCompile Include="CParams.cpp" />
+    <ClCompile Include="phenotype.cpp" />
     <ClCompile Include="RainbowIslands\Character.cpp" />
     <ClCompile Include="RainbowIslands\CharacterBub.cpp" />
     <ClCompile Include="RainbowIslands\CharacterCaterpillar.cpp" />
