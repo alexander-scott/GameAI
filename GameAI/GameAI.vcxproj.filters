@@ -162,6 +162,12 @@
     <ClInclude Include="cga.h">
       <Filter>Rainbow Islands\NewItems</Filter>
     </ClInclude>
+    <ClInclude Include="CMapper.h">
+      <Filter>Rainbow Islands\NewItems</Filter>
+    </ClInclude>
+    <ClInclude Include="CharacterAI.h">
+      <Filter>Rainbow Islands\NewItems</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GameScreen.cpp">
@@ -261,6 +267,12 @@
       <Filter>Rainbow Islands\NewItems</Filter>
     </ClCompile>
     <ClCompile Include="cga.cpp">
+      <Filter>Rainbow Islands\NewItems</Filter>
+    </ClCompile>
+    <ClCompile Include="CMapper.cpp">
+      <Filter>Rainbow Islands\NewItems</Filter>
+    </ClCompile>
+    <ClCompile Include="CharacterAI.cpp">
       <Filter>Rainbow Islands\NewItems</Filter>
     </ClCompile>
   </ItemGroup>

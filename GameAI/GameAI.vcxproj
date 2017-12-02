@@ -68,6 +68,7 @@
   <ItemGroup>
     <ClInclude Include="C2DMatrix.h" />
     <ClInclude Include="cga.h" />
+    <ClInclude Include="CharacterAI.h" />
     <ClInclude Include="Chess\ChessCommons.h" />
     <ClInclude Include="Chess\ChessConstants.h" />
     <ClInclude Include="Chess\ChessMoveManager.h" />
@@ -77,6 +78,7 @@
     <ClInclude Include="CInnovation.h" />
     <ClInclude Include="Clustering\ClusteringConstants.h" />
     <ClInclude Include="Clustering\GameScreen_Clustering.h" />
+    <ClInclude Include="CMapper.h" />
     <ClInclude Include="Collisions.h" />
     <ClInclude Include="Commons.h" />
     <ClInclude Include="Constants.h" />
@@ -111,12 +113,14 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="cga.cpp" />
+    <ClCompile Include="CharacterAI.cpp" />
     <ClCompile Include="Chess\ChessMoveManager.cpp" />
     <ClCompile Include="Chess\ChessPlayerAI.cpp" />
     <ClCompile Include="Chess\GameScreen_Chess.cpp" />
     <ClCompile Include="Chess\ChessPlayer.cpp" />
     <ClCompile Include="CInnovation.cpp" />
     <ClCompile Include="Clustering\GameScreen_Clustering.cpp" />
+    <ClCompile Include="CMapper.cpp" />
     <ClCompile Include="Collisions.cpp" />
     <ClCompile Include="Conway\GameScreen_Conway.cpp" />
     <ClCompile Include="CSpecies.cpp" />
