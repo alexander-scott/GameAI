@@ -54,4 +54,18 @@ const int kNumberOfOutputs				 = 4; // Controls on joypad.
 const int kNumberOfHiddenLayers			 = 1; // 
 const int kNumberOfNeuronsPerHiddenLayer = 3; // 
 
+//--------------------------------------------------------------------
+// NEW STUFF
+const int kNumInputs = 5;
+const int kNumOutputs = 4;
+const int kNumHidden = 1;
+const int kNeuronsPerHiddenLayer = 6;
+
+const float kMaxPerturbation = 0.3f;
+const int kNumElite = 4;
+const int kNumCopiesElite = 1;
+
+const int kBias = -1;
+const int kActivationResponse = 1;
+
 #endif //RAINBOW_CONSTANTS_H
