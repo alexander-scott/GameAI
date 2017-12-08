@@ -5,6 +5,8 @@
 //-----------------------------------------------------------------------
 CCharacter::CCharacter(SDL_Renderer* renderer, string imagePath, LevelMap* map, Vector2D startPosition) : CharacterBub(renderer, imagePath, map, startPosition)
 {
+
+	m_spawnRainbow = false;
 	m_startPosition = startPosition;
 }
 
@@ -53,7 +55,7 @@ bool CCharacter::Update(int yPositionToComplete, vector<Character*> enemies, vec
 	percentDone = 1 - percentDone;
 
 	//add in distance to top
-	inputs.push_back(percentDone);
+	//inputs.push_back(percentDone);
 
 	//add in vector to closest fruit
 	inputs.push_back(vClosestFruit.x);
@@ -73,34 +75,110 @@ bool CCharacter::Update(int yPositionToComplete, vector<Character*> enemies, vec
 		return false;
 	}
 
-	////assign the outputs to the sweepers left & right tracks
-	//m_lTrack = output[0];
-	//m_rTrack = output[1];
-
-	////calculate steering forces
-	//double RotForce = m_lTrack - m_rTrack;
-
-	////clamp rotation
-	//Clamp(RotForce, -CParams::dMaxTurnRate, CParams::dMaxTurnRate);
-
-	//m_dRotation += RotForce;
-
-	//m_dSpeed = (m_lTrack + m_rTrack);
-
-	////update Look At 
-	//m_vLookAt.x = -sin(m_dRotation);
-	//m_vLookAt.y = cos(m_dRotation);
-
-	////update position
-	//m_vPosition += (m_vLookAt * m_dSpeed);
-
-	////wrap around window limits
-	//if (m_vPosition.x > CParams::WindowWidth) m_vPosition.x = 0;
-	//if (m_vPosition.x < 0) m_vPosition.x = CParams::WindowWidth;
-	//if (m_vPosition.y > CParams::WindowHeight) m_vPosition.y = 0;
-	//if (m_vPosition.y < 0) m_vPosition.y = CParams::WindowHeight;
+	if (output[0] > output[1] && output[0] > output[2] && output[0] > output[3]) // Move Left
+	{
+		mMovingLeft = true;
+		mMovingRight = false;
+		if (mOnGround)
+			SetState(CHARACTERSTATE_WALK);
+	}
+	else if (output[1] > output[0] && output[1] > output[2] && output[1] > output[3]) // Move right
+	{
+		mMovingRight = true;
+		mMovingLeft = false;
+		if (mOnGround)
+			SetState(CHARACTERSTATE_WALK);
+	}
+	else if (output[2] > output[0] && output[2] > output[1] && output[2] > output[3]) // Jump
+	{
+		if (!mJumping)
+		{
+			SetState(CHARACTERSTATE_JUMP);
+			Jump();
+		}
+	}
+	else if (output[3] > output[0] && output[3] > output[1] && output[3] > output[2]) // Spawn rainbow
+	{
+		m_spawnRainbow = true;
+	}
 
 	return true;
+}
+
+void CCharacter::Update(size_t deltaTime, SDL_Event e)
+{
+	//cout << deltaTime << endl;
+
+	//Change frame?
+	mFrameDelay -= deltaTime;
+	if (mFrameDelay <= 0.0f)
+	{
+		//Reset frame delay count.
+		mFrameDelay = ANIMATION_DELAY;
+
+		//Move frame on.
+		mCurrentFrame++;
+
+		//Loop frame around if it goes beyond the number of frames.
+		if (mCurrentFrame > mEndFrame)
+		{
+			if (IsInState(CHARACTERSTATE_PLAYER_DEATH))
+				mAlive = false;
+			else
+				mCurrentFrame = mStartFrame;
+		}
+	}
+
+	//Update if not in death state.
+	if (!IsInState(CHARACTERSTATE_PLAYER_DEATH))
+	{
+		AlternateCharacterUpdate(deltaTime, e);
+
+		if (mOnGround && IsInState(CHARACTERSTATE_JUMP))
+		{
+			if (mMovingLeft || mMovingRight)
+				SetState(CHARACTERSTATE_WALK);
+			else
+				SetState(CHARACTERSTATE_NONE);
+		}
+
+		//Collision position variables.
+		int centralXPosition = (int)(mPosition.x + (mTexture->GetWidth()*0.5f)) / TILE_WIDTH;
+		int centralYPosition = (int)(mPosition.y + mTexture->GetHeight()*0.5f) / TILE_HEIGHT;
+		int footPosition = (int)(mPosition.y + mTexture->GetHeight()) / TILE_HEIGHT;
+
+
+		/*if (VirtualJoypad::Instance()->LeftArrow)
+		{
+			mMovingLeft = true;
+			mMovingRight = false;
+			if (mOnGround)
+				SetState(CHARACTERSTATE_WALK);
+		}
+		else if (VirtualJoypad::Instance()->RightArrow)
+		{
+			mMovingRight = true;
+			mMovingLeft = false;
+			if (mOnGround)
+				SetState(CHARACTERSTATE_WALK);
+		}
+		else
+		{
+			mMovingLeft = false;
+			mMovingRight = false;
+			if (mOnGround)
+				SetState(CHARACTERSTATE_NONE);
+		}
+
+		if (VirtualJoypad::Instance()->UpArrow)
+		{
+			if (!mJumping)
+			{
+				SetState(CHARACTERSTATE_JUMP);
+				Jump();
+			}
+		}*/
+	}
 }
 
 

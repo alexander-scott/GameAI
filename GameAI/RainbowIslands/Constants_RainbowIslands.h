@@ -56,7 +56,9 @@ const int kNumberOfNeuronsPerHiddenLayer = 3; //
 
 //--------------------------------------------------------------------
 // NEW STUFF
-const int kNumInputs = 5;
+const bool USE_NEURAL_NETWORK = true;
+
+const int kNumInputs = 4;
 const int kNumOutputs = 4;
 const int kNumHidden = 1;
 const int kNeuronsPerHiddenLayer = 6;
@@ -67,5 +69,11 @@ const int kNumCopiesElite = 1;
 
 const int kBias = -1;
 const int kActivationResponse = 1;
+
+const int kNumOfCharacters = 1;
+const int kNumTicks = 2000;
+
+const double kMutationRateNN = 0.1;
+const double kCrossoverRateNN = 0.7;
 
 #endif //RAINBOW_CONSTANTS_H

@@ -37,6 +37,7 @@ private:
 	//start position
 	Vector2D		m_startPosition;
 
+	bool			m_spawnRainbow;
 
 public:
 
@@ -44,6 +45,7 @@ public:
 
 	//updates the ANN with information from the sweepers enviroment
 	bool			Update(int yPositionToComplete, vector<Character*> enemies, vector<CharacterFruit*> fruit);
+	virtual void	Update(size_t deltaTime, SDL_Event e);
 
 	//returns a vector to the closest fruit
 	Vector2D		GetClosestFruit(vector<CharacterFruit*> &objects);
@@ -57,11 +59,16 @@ public:
 	//-------------------accessor functions
 	void			IncrementFitness() { ++m_dFitness; }
 
+	void			DecrementFitness() { --m_dFitness; }
+
 	double			Fitness()const { return m_dFitness; }
 
 	void			PutWeights(vector<double> &w) { m_ItsBrain.PutWeights(w); }
 
 	int				GetNumberOfWeights()const { return m_ItsBrain.GetNumberOfWeights(); }
+
+	bool			SpawnARainbow() { return m_spawnRainbow; }
+	void			RainbowSpawned() { m_spawnRainbow = false; }
 };
 
 
