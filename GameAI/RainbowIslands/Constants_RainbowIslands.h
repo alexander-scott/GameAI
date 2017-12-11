@@ -64,14 +64,14 @@ const int kNumHidden = 1;
 const int kNeuronsPerHiddenLayer = 6;
 
 const float kMaxPerturbation = 0.3f;
-const int kNumElite = 4;
+const int kNumElite = 2;
 const int kNumCopiesElite = 1;
 
 const int kBias = -1;
 const int kActivationResponse = 1;
 
-const int kNumOfCharacters = 1;
-const int kNumTicks = 2000;
+const int kNumOfCharacters = 2;
+const int kNumTicks = 200;
 
 const double kMutationRateNN = 0.1;
 const double kCrossoverRateNN = 0.7;

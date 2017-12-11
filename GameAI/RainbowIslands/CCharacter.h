@@ -65,7 +65,9 @@ public:
 
 	void			PutWeights(vector<double> &w) { m_ItsBrain.PutWeights(w); }
 
-	int				GetNumberOfWeights()const { return m_ItsBrain.GetNumberOfWeights(); }
+	int				GetNumberOfWeights()const {
+		return m_ItsBrain.GetNumberOfWeights(); 
+	}
 
 	bool			SpawnARainbow() { return m_spawnRainbow; }
 	void			RainbowSpawned() { m_spawnRainbow = false; }

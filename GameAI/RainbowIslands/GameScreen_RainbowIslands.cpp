@@ -361,14 +361,8 @@ void GameScreen_RainbowIslands::UpdateCharacterNN(size_t deltaTime, SDL_Event e)
 		//run the GA to create a new population
 		m_vecThePopulation = m_pGA->Epoch(m_vecThePopulation);
 
-		//insert the new (hopefully)improved brains back into the sweepers
-		//and reset their positions etc
-		for (int i = 0; i < kNumOfCharacters; ++i)
-		{
-			m_vecCharacters[i]->PutWeights(m_vecThePopulation[i].vecWeights);
-
-			m_vecCharacters[i]->Reset();
-		}
+		RestartLevel();
+		return;
 	}
 
 	for (int i = 0; i < kNumOfCharacters; i++)
@@ -614,46 +608,46 @@ void GameScreen_RainbowIslands::UpdateRainbowsNN(size_t deltaTime, SDL_Event e)
 	{
 		int rainbowIndexToDelete = -1;
 
-		for (unsigned int i = 0; i < mRainbows.size(); i++)
+		for (unsigned int iRainbow = 0; iRainbow < mRainbows.size(); iRainbow++)
 		{
 			//Update the rainbow.
-			mRainbows[i]->Update(deltaTime, e);
+			mRainbows[iRainbow]->Update(deltaTime, e);
 
-			if (!mRainbows[i]->GetAlive())
-				rainbowIndexToDelete = i;
+			if (!mRainbows[iRainbow]->GetAlive())
+				rainbowIndexToDelete = iRainbow;
 			else
 			{
-				for (int i = 0; i < kNumOfCharacters; i++)
+				for (int iCharacter = 0; iCharacter < kNumOfCharacters; iCharacter++)
 				{
-					int xPosition = (int)m_vecCharacters[i]->GetPosition().x + (int)(m_vecCharacters[i]->GetCollisionBox().width*0.5f);
-					int footPosition = (int)(m_vecCharacters[i]->GetPosition().y + m_vecCharacters[i]->GetCollisionBox().height);
+					int xPosition = (int)m_vecCharacters[iCharacter]->GetPosition().x + (int)(m_vecCharacters[iCharacter]->GetCollisionBox().width*0.5f);
+					int footPosition = (int)(m_vecCharacters[iCharacter]->GetPosition().y + m_vecCharacters[iCharacter]->GetCollisionBox().height);
 
 					//check if the player has collided with it.
-					if (!m_vecCharacters[i]->IsJumping())
+					if (!m_vecCharacters[iCharacter]->IsJumping())
 					{
-						if (Collisions::Instance()->PointInBox(Vector2D(xPosition, footPosition), mRainbows[i]->GetCollisionBox()))
+						if (Collisions::Instance()->PointInBox(Vector2D(xPosition, footPosition), mRainbows[iRainbow]->GetCollisionBox()))
 						{
-							m_vecCharacters[i]->SetState(CHARACTERSTATE_WALK);
-							m_vecCharacters[i]->SetOnARainbow(true);
-							int xPointOfCollision = (int)(mRainbows[i]->GetPosition().x + mRainbows[i]->GetCollisionBox().width - xPosition);
-							if (m_vecCharacters[i]->GetFacing() == FACING_RIGHT)
-								xPointOfCollision = (int)(xPosition - mRainbows[i]->GetPosition().x);
+							m_vecCharacters[iCharacter]->SetState(CHARACTERSTATE_WALK);
+							m_vecCharacters[iCharacter]->SetOnARainbow(true);
+							int xPointOfCollision = (int)(mRainbows[iRainbow]->GetPosition().x + mRainbows[iRainbow]->GetCollisionBox().width - xPosition);
+							if (m_vecCharacters[iCharacter]->GetFacing() == FACING_RIGHT)
+								xPointOfCollision = (int)(xPosition - mRainbows[iRainbow]->GetPosition().x);
 
 							//We don't want to pop between walking on different rainbows. Ensure the switch between rainbows looks 'realistic'
-							double distanceBetweenPoints = footPosition - (mRainbows[i]->GetPosition().y - RainbowOffsets[xPointOfCollision]);
+							double distanceBetweenPoints = footPosition - (mRainbows[iRainbow]->GetPosition().y - RainbowOffsets[xPointOfCollision]);
 							if (distanceBetweenPoints < 40.0)
-								m_vecCharacters[i]->SetPosition(Vector2D(m_vecCharacters[i]->GetPosition().x, mRainbows[i]->GetPosition().y - RainbowOffsets[xPointOfCollision]));
+								m_vecCharacters[iCharacter]->SetPosition(Vector2D(m_vecCharacters[iCharacter]->GetPosition().x, mRainbows[iRainbow]->GetPosition().y - RainbowOffsets[xPointOfCollision]));
 						}
 					}
 
 					//Check for collisions with enemies.
-					for (unsigned int j = 0; j < mEnemies.size(); j++)
+					for (unsigned int iEnemy = 0; iEnemy < mEnemies.size(); iEnemy++)
 					{
-						if (mRainbows[i]->CanKill())
+						if (mRainbows[iRainbow]->CanKill())
 						{
-							if (Collisions::Instance()->Circle(mRainbows[i]->GetStrikePosition(), mRainbows[i]->GetCollisionRadius(), mEnemies[j]->GetPosition(), mEnemies[j]->GetCollisionRadius()))
+							if (Collisions::Instance()->Circle(mRainbows[iRainbow]->GetStrikePosition(), mRainbows[iRainbow]->GetCollisionRadius(), mEnemies[iEnemy]->GetPosition(), mEnemies[iEnemy]->GetCollisionRadius()))
 							{
-								mEnemies[j]->SetAlive(false);
+								mEnemies[iEnemy]->SetAlive(false);
 							}
 						}
 					}
@@ -783,7 +777,14 @@ void GameScreen_RainbowIslands::RestartLevel()
 	SetLevelMap();
 
 	//Respawn characters and map.
-	CreateStartingCharacters();
+	if (!USE_NEURAL_NETWORK)
+	{
+		CreateStartingCharacters();
+	}
+	else
+	{
+		CreateStartingCharactersNN();
+	}
 
 	mCanSpawnRainbow = true;
 
@@ -835,6 +836,8 @@ void GameScreen_RainbowIslands::CreateStartingCharacters()
 
 void GameScreen_RainbowIslands::CreateStartingCharactersNN()
 {
+	m_vecCharacters.clear();
+
 	//let's create the characters
 	for (int i = 0; i < kNumOfCharacters; ++i)
 	{
