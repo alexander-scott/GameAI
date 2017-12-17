@@ -30,10 +30,7 @@ public:
 	Vector2D		GetPosition();
 	Vector2D		GetCentralPosition();
 
-	FACING			 GetFacing()									
-	{
-		return mFacingDirection;
-	}
+	FACING			 GetFacing()									{return mFacingDirection;}
 
 	CHARACTER_STATE GetState()										{return mState;}
 	virtual void	SetState(CHARACTER_STATE newState);

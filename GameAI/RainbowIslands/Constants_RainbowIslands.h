@@ -54,29 +54,4 @@ const int kNumberOfOutputs				 = 4; // Controls on joypad.
 const int kNumberOfHiddenLayers			 = 1; // 
 const int kNumberOfNeuronsPerHiddenLayer = 3; // 
 
-//--------------------------------------------------------------------
-// NEW STUFF
-const bool USE_NEURAL_NETWORK = true;
-
-const int kNumInputs = 41;
-const int kNumOutputs = 4;
-const int kNumHidden = 1;
-const int kNeuronsPerHiddenLayer = 6;
-
-const float kMaxPerturbation = 0.3f;
-const int kNumElite = 1;
-const int kNumCopiesElite = 1;
-
-const int kBias = -1;
-const int kActivationResponse = 1;
-
-const int kNumOfCharacters = 1;
-const int kNumTicks = 200;
-
-const double kMutationRateNN = 0.1;
-const double kCrossoverRateNN = 0.7;
-
-const int RainbowOffsets[] = { 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,22,22,23,23,
-23,22,22,22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0, };
-
 #endif //RAINBOW_CONSTANTS_H

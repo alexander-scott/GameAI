@@ -25,14 +25,11 @@
     <Filter Include="Lunar">
       <UniqueIdentifier>{b3a71dea-3e10-44e4-a276-34a7f71d3c74}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Rainbow Islands">
-      <UniqueIdentifier>{c9390343-51cf-40aa-9fbc-9812215bfd40}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Clustering">
       <UniqueIdentifier>{a2fdf15e-4e2e-4475-9dd8-75b8ea1a70a4}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Rainbow Islands\New">
-      <UniqueIdentifier>{d1486c67-6a74-492d-ad73-c1793b95c0f9}</UniqueIdentifier>
+    <Filter Include="RainbowIslands">
+      <UniqueIdentifier>{345aba8c-98e9-458b-bb73-db6524b08ccc}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -99,56 +96,44 @@
     <ClInclude Include="GameObject.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="RainbowIslands\Character.h">
-      <Filter>Rainbow Islands</Filter>
-    </ClInclude>
-    <ClInclude Include="RainbowIslands\CharacterBub.h">
-      <Filter>Rainbow Islands</Filter>
-    </ClInclude>
-    <ClInclude Include="RainbowIslands\CharacterCaterpillar.h">
-      <Filter>Rainbow Islands</Filter>
-    </ClInclude>
-    <ClInclude Include="RainbowIslands\CharacterChest.h">
-      <Filter>Rainbow Islands</Filter>
-    </ClInclude>
-    <ClInclude Include="RainbowIslands\CharacterFruit.h">
-      <Filter>Rainbow Islands</Filter>
-    </ClInclude>
-    <ClInclude Include="RainbowIslands\CharacterRainbow.h">
-      <Filter>Rainbow Islands</Filter>
-    </ClInclude>
-    <ClInclude Include="RainbowIslands\Commons_RainbowIslands.h">
-      <Filter>Rainbow Islands</Filter>
-    </ClInclude>
-    <ClInclude Include="RainbowIslands\Constants_RainbowIslands.h">
-      <Filter>Rainbow Islands</Filter>
-    </ClInclude>
-    <ClInclude Include="RainbowIslands\GameScreen_RainbowIslands.h">
-      <Filter>Rainbow Islands</Filter>
-    </ClInclude>
-    <ClInclude Include="RainbowIslands\LevelMap.h">
-      <Filter>Rainbow Islands</Filter>
-    </ClInclude>
-    <ClInclude Include="RainbowIslands\VirtualJoypad.h">
-      <Filter>Rainbow Islands</Filter>
-    </ClInclude>
     <ClInclude Include="Clustering\ClusteringConstants.h">
       <Filter>Clustering</Filter>
     </ClInclude>
     <ClInclude Include="Clustering\GameScreen_Clustering.h">
       <Filter>Clustering</Filter>
     </ClInclude>
-    <ClInclude Include="RainbowIslands\utils.h">
-      <Filter>Rainbow Islands\New</Filter>
+    <ClInclude Include="RainbowIslands\Character.h">
+      <Filter>RainbowIslands</Filter>
     </ClInclude>
-    <ClInclude Include="RainbowIslands\CNeuralNet.h">
-      <Filter>Rainbow Islands\New</Filter>
+    <ClInclude Include="RainbowIslands\CharacterBub.h">
+      <Filter>RainbowIslands</Filter>
     </ClInclude>
-    <ClInclude Include="RainbowIslands\CGenAlg.h">
-      <Filter>Rainbow Islands\New</Filter>
+    <ClInclude Include="RainbowIslands\CharacterCaterpillar.h">
+      <Filter>RainbowIslands</Filter>
     </ClInclude>
-    <ClInclude Include="RainbowIslands\CCharacter.h">
-      <Filter>Rainbow Islands\New</Filter>
+    <ClInclude Include="RainbowIslands\CharacterChest.h">
+      <Filter>RainbowIslands</Filter>
+    </ClInclude>
+    <ClInclude Include="RainbowIslands\CharacterFruit.h">
+      <Filter>RainbowIslands</Filter>
+    </ClInclude>
+    <ClInclude Include="RainbowIslands\CharacterRainbow.h">
+      <Filter>RainbowIslands</Filter>
+    </ClInclude>
+    <ClInclude Include="RainbowIslands\Commons_RainbowIslands.h">
+      <Filter>RainbowIslands</Filter>
+    </ClInclude>
+    <ClInclude Include="RainbowIslands\Constants_RainbowIslands.h">
+      <Filter>RainbowIslands</Filter>
+    </ClInclude>
+    <ClInclude Include="RainbowIslands\GameScreen_RainbowIslands.h">
+      <Filter>RainbowIslands</Filter>
+    </ClInclude>
+    <ClInclude Include="RainbowIslands\LevelMap.h">
+      <Filter>RainbowIslands</Filter>
+    </ClInclude>
+    <ClInclude Include="RainbowIslands\VirtualJoypad.h">
+      <Filter>RainbowIslands</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -203,47 +188,35 @@
     <ClCompile Include="GameObject.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="RainbowIslands\Character.cpp">
-      <Filter>Rainbow Islands</Filter>
-    </ClCompile>
-    <ClCompile Include="RainbowIslands\CharacterBub.cpp">
-      <Filter>Rainbow Islands</Filter>
-    </ClCompile>
-    <ClCompile Include="RainbowIslands\CharacterCaterpillar.cpp">
-      <Filter>Rainbow Islands</Filter>
-    </ClCompile>
-    <ClCompile Include="RainbowIslands\CharacterChest.cpp">
-      <Filter>Rainbow Islands</Filter>
-    </ClCompile>
-    <ClCompile Include="RainbowIslands\CharacterFruit.cpp">
-      <Filter>Rainbow Islands</Filter>
-    </ClCompile>
-    <ClCompile Include="RainbowIslands\CharacterRainbow.cpp">
-      <Filter>Rainbow Islands</Filter>
-    </ClCompile>
-    <ClCompile Include="RainbowIslands\GameScreen_RainbowIslands.cpp">
-      <Filter>Rainbow Islands</Filter>
-    </ClCompile>
-    <ClCompile Include="RainbowIslands\LevelMap.cpp">
-      <Filter>Rainbow Islands</Filter>
-    </ClCompile>
-    <ClCompile Include="RainbowIslands\VirtualJoypad.cpp">
-      <Filter>Rainbow Islands</Filter>
-    </ClCompile>
     <ClCompile Include="Clustering\GameScreen_Clustering.cpp">
       <Filter>Clustering</Filter>
     </ClCompile>
-    <ClCompile Include="RainbowIslands\utils.cpp">
-      <Filter>Rainbow Islands\New</Filter>
+    <ClCompile Include="RainbowIslands\Character.cpp">
+      <Filter>RainbowIslands</Filter>
     </ClCompile>
-    <ClCompile Include="RainbowIslands\CNeuralNet.cpp">
-      <Filter>Rainbow Islands\New</Filter>
+    <ClCompile Include="RainbowIslands\CharacterBub.cpp">
+      <Filter>RainbowIslands</Filter>
     </ClCompile>
-    <ClCompile Include="RainbowIslands\CGenAlg.cpp">
-      <Filter>Rainbow Islands\New</Filter>
+    <ClCompile Include="RainbowIslands\CharacterCaterpillar.cpp">
+      <Filter>RainbowIslands</Filter>
     </ClCompile>
-    <ClCompile Include="RainbowIslands\CCharacter.cpp">
-      <Filter>Rainbow Islands\New</Filter>
+    <ClCompile Include="RainbowIslands\CharacterChest.cpp">
+      <Filter>RainbowIslands</Filter>
+    </ClCompile>
+    <ClCompile Include="RainbowIslands\CharacterFruit.cpp">
+      <Filter>RainbowIslands</Filter>
+    </ClCompile>
+    <ClCompile Include="RainbowIslands\CharacterRainbow.cpp">
+      <Filter>RainbowIslands</Filter>
+    </ClCompile>
+    <ClCompile Include="RainbowIslands\GameScreen_RainbowIslands.cpp">
+      <Filter>RainbowIslands</Filter>
+    </ClCompile>
+    <ClCompile Include="RainbowIslands\LevelMap.cpp">
+      <Filter>RainbowIslands</Filter>
+    </ClCompile>
+    <ClCompile Include="RainbowIslands\VirtualJoypad.cpp">
+      <Filter>RainbowIslands</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
