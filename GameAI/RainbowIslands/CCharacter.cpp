@@ -5,9 +5,10 @@
 //-----------------------------------------------------------------------
 CCharacter::CCharacter(SDL_Renderer* renderer, string imagePath, LevelMap* map, Vector2D startPosition) : CharacterBub(renderer, imagePath, map, startPosition)
 {
-
+	m_previousInput = 0;
+	m_dFitness = 0;
 	m_spawnRainbow = false;
-	m_startPosition = startPosition;
+	m_startPosition = Vector2D(startPosition.x, startPosition.y + 30);
 }
 
 //-------------------------------------------Reset()--------------------
@@ -55,15 +56,18 @@ bool CCharacter::Update(int yPositionToComplete, vector<Character*> enemies, vec
 	percentDone = 1 - percentDone;
 
 	//add in distance to top
-	//inputs.push_back(percentDone);
+	inputs.push_back(percentDone);
+
+	//add in the previous input (aka what the character is currently doing)
+	inputs.push_back(m_previousInput);
 
 	//add in vector to closest fruit
 	inputs.push_back(vClosestFruit.x);
 	inputs.push_back(vClosestFruit.y);
 
 	// Add in vector away from closest enemy
-	inputs.push_back(vClosestEnemy.x);
-	inputs.push_back(vClosestEnemy.y);
+	/*inputs.push_back(vClosestEnemy.x);
+	inputs.push_back(vClosestEnemy.y);*/
 
 	//update the brain and get feedback
 	vector<double> output = m_ItsBrain.Update(inputs);
@@ -77,6 +81,7 @@ bool CCharacter::Update(int yPositionToComplete, vector<Character*> enemies, vec
 
 	if (output[0] > output[1] && output[0] > output[2] && output[0] > output[3]) // Move Left
 	{
+		m_previousInput = 0;
 		mMovingLeft = true;
 		mMovingRight = false;
 		if (mOnGround)
@@ -84,6 +89,7 @@ bool CCharacter::Update(int yPositionToComplete, vector<Character*> enemies, vec
 	}
 	else if (output[1] > output[0] && output[1] > output[2] && output[1] > output[3]) // Move right
 	{
+		m_previousInput = 1;
 		mMovingRight = true;
 		mMovingLeft = false;
 		if (mOnGround)
@@ -91,6 +97,7 @@ bool CCharacter::Update(int yPositionToComplete, vector<Character*> enemies, vec
 	}
 	else if (output[2] > output[0] && output[2] > output[1] && output[2] > output[3]) // Jump
 	{
+		m_previousInput = 2;
 		if (!mJumping)
 		{
 			SetState(CHARACTERSTATE_JUMP);
@@ -99,6 +106,7 @@ bool CCharacter::Update(int yPositionToComplete, vector<Character*> enemies, vec
 	}
 	else if (output[3] > output[0] && output[3] > output[1] && output[3] > output[2]) // Spawn rainbow
 	{
+		m_previousInput = 3;
 		m_spawnRainbow = true;
 	}
 

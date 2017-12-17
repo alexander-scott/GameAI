@@ -39,6 +39,8 @@ private:
 
 	bool			m_spawnRainbow;
 
+	int				m_previousInput;
+
 public:
 
 	CCharacter(SDL_Renderer* renderer, string imagePath, LevelMap* map, Vector2D startPosition);
@@ -65,9 +67,7 @@ public:
 
 	void			PutWeights(vector<double> &w) { m_ItsBrain.PutWeights(w); }
 
-	int				GetNumberOfWeights()const {
-		return m_ItsBrain.GetNumberOfWeights(); 
-	}
+	int				GetNumberOfWeights()const {	return m_ItsBrain.GetNumberOfWeights(); }
 
 	bool			SpawnARainbow() { return m_spawnRainbow; }
 	void			RainbowSpawned() { m_spawnRainbow = false; }

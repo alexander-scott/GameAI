@@ -335,8 +335,6 @@ void GameScreen_RainbowIslands::UpdateCharacterNN(size_t deltaTime, SDL_Event e)
 				}
 			}
 
-
-
 			//update the chromos fitness score
 			m_vecThePopulation[iChar].dFitness = m_vecCharacters[iChar]->Fitness();
 
@@ -383,7 +381,14 @@ void GameScreen_RainbowIslands::UpdateCharacterNN(size_t deltaTime, SDL_Event e)
 		RestartLevel();
 	}
 
-	CreateChest(Vector2D(kRainbowIslandsScreenWidth*0.25f, -50.0f));
+	for (int i = 0; i < kNumOfCharacters; i++)
+	{
+		if (m_vecCharacters[i]->GetCentralPosition().y < Y_POSITION_TO_COMPLETE)
+		{
+			CreateChest(Vector2D(kRainbowIslandsScreenWidth*0.25f, -50.0f));
+			break;
+		}
+	}
 
 	if (!mFruit.empty())
 	{
