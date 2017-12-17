@@ -6,7 +6,11 @@
 #define _CHARACTERBUB_H
 
 #include "Character.h"
+#include "CharacterRainbow.h"
+#include "../Collisions.h"
+#include "VirtualJoypad.h"
 #include <iostream>
+#include <vector>
 
 using namespace::std;
 
@@ -21,6 +25,9 @@ public:
 	virtual void AlternateCharacterUpdate(size_t deltaTime, SDL_Event e);  //Required as it is very similar to original, but with RAINBOW tweaks.
 	virtual void Update(size_t deltaTime, SDL_Event e);
 	virtual void Render();
+	virtual void RenderRainbows();
+
+	void UpdateRainbows(size_t deltaTime, SDL_Event e, vector<Character*>& enemies);
 
 	void MoveLeft(size_t deltaTime, int yCentreOnImage);
 	void MoveRight(size_t deltaTime, int yCentreOnImage);
@@ -30,6 +37,7 @@ public:
 
 	bool OnARainbow()						{ return mOnRainbow; }
 	void SetOnARainbow(bool yesNo)			{ mOnRainbow = yesNo; }
+	void CreateRainbow(Vector2D position, int numberOfRainbows);
 
 	void AddPoints()						{ mPoints += 10; }
 	int  GetPoints()						{ return mPoints; }
@@ -43,7 +51,10 @@ protected:
 	int		mCurrentFrame;
 	float	mFrameDelay;
 
+	bool	mCanSpawnRainbow;
 	bool	mOnRainbow;
 	int		mPoints;
+
+	vector<CharacterRainbow*> mRainbows;
 };
 #endif //_CHARACTERBUB_H

@@ -53,11 +53,6 @@ private:
 	void UpdateEnemies(size_t deltaTime, SDL_Event e);
 	void CreateCaterpillar(Vector2D position, FACING direction);
 
-	void UpdateRainbows(size_t deltaTime, SDL_Event e);
-	void UpdateRainbowsNN(size_t deltaTime, SDL_Event e);
-	void CreateRainbow(Vector2D position, int numberOfRainbows);
-	void CreateRainbow(Vector2D position, int numberOfRainbows, CCharacter* character);
-
 	void UpdateFruit(size_t deltaTime, SDL_Event e);
 	void CreateFruit(Vector2D position, bool bounce);
 
@@ -71,7 +66,6 @@ private:
 	bool					  mCanSpawnRainbow;
 	vector<Character*>		  mEnemies;
 	vector<CharacterFruit*>	  mFruit;
-	vector<CharacterRainbow*> mRainbows;
 	CharacterChest*			  mChest;
 	LevelMap*				  mLevelMap;
 

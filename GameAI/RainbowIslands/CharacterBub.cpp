@@ -7,7 +7,6 @@
 #include "LevelMap.h"
 #include "../Texture2D.h"
 #include "../Constants.h"
-#include "VirtualJoypad.h"
 
 //--------------------------------------------------------------------------------------------------
 
@@ -24,6 +23,7 @@ CharacterBub::CharacterBub(SDL_Renderer* renderer, string imagePath, LevelMap* m
 
 	mCollisionRadius	= 10.0f;
 	mOnRainbow			= false;
+	mCanSpawnRainbow	= true;
 	mPoints				= 0;
 	SetState(CHARACTERSTATE_NONE);
 }
@@ -32,6 +32,8 @@ CharacterBub::CharacterBub(SDL_Renderer* renderer, string imagePath, LevelMap* m
 
 CharacterBub::~CharacterBub()
 {
+	//Rainbows.
+	mRainbows.clear();
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -53,6 +55,85 @@ void CharacterBub::Render()
 		mTexture->Render(portionOfSpritesheet, destRect, SDL_FLIP_HORIZONTAL);
 	else
 		mTexture->Render(portionOfSpritesheet, destRect, SDL_FLIP_NONE);
+}
+
+void CharacterBub::RenderRainbows()
+{
+	//Draw the Rainbows.
+	for (unsigned int i = 0; i < mRainbows.size(); i++)
+	{
+		mRainbows[i]->Render();
+	}
+}
+
+void CharacterBub::UpdateRainbows(size_t deltaTime, SDL_Event e, vector<Character*>& enemies)
+{
+	//--------------------------------------------------------------------------------------------------
+	//Update the Rainbows.
+	//--------------------------------------------------------------------------------------------------
+
+	//Need to turn flag off each frame incase the rainbow disapated.
+	SetOnARainbow(false);
+
+	if (!mRainbows.empty())
+	{
+		int rainbowIndexToDelete = -1;
+
+		for (unsigned int i = 0; i < mRainbows.size(); i++)
+		{
+			int xPosition = (int)GetPosition().x + (int)(GetCollisionBox().width*0.5f);
+			int footPosition = (int)(GetPosition().y + GetCollisionBox().height);
+
+			//Update the rainbow.
+			mRainbows[i]->Update(deltaTime, e);
+
+			if (!mRainbows[i]->GetAlive())
+				rainbowIndexToDelete = i;
+			else
+			{
+				//check if the player has collided with it.
+				if (!IsJumping())
+				{
+					if (Collisions::Instance()->PointInBox(Vector2D(xPosition, footPosition), mRainbows[i]->GetCollisionBox()))
+					{
+						SetState(CHARACTERSTATE_WALK);
+						SetOnARainbow(true);
+						int xPointOfCollision = (int)(mRainbows[i]->GetPosition().x + mRainbows[i]->GetCollisionBox().width - xPosition);
+						if (GetFacing() == FACING_RIGHT)
+							xPointOfCollision = (int)(xPosition - mRainbows[i]->GetPosition().x);
+
+						//We don't want to pop between walking on different rainbows. Ensure the switch between rainbows looks 'realistic'
+						double distanceBetweenPoints = footPosition - (mRainbows[i]->GetPosition().y - RainbowOffsets[xPointOfCollision]);
+						if (distanceBetweenPoints < 40.0)
+							SetPosition(Vector2D(GetPosition().x, mRainbows[i]->GetPosition().y - RainbowOffsets[xPointOfCollision]));
+					}
+				}
+
+				//Check for collisions with enemies.
+				for (unsigned int j = 0; j < enemies.size(); j++)
+				{
+					if (mRainbows[i]->CanKill())
+					{
+						if (Collisions::Instance()->Circle(mRainbows[i]->GetStrikePosition(), mRainbows[i]->GetCollisionRadius(), enemies[j]->GetPosition(), enemies[j]->GetCollisionRadius()))
+						{
+							enemies[j]->SetAlive(false);
+						}
+					}
+				}
+			}
+		}
+
+		//--------------------------------------------------------------------------------------------------
+		//Remove a dead rainbow - 1 each update.
+		//--------------------------------------------------------------------------------------------------
+		if (rainbowIndexToDelete != -1)
+		{
+			Character* toDelete = mRainbows[rainbowIndexToDelete];
+			mRainbows.erase(mRainbows.begin() + rainbowIndexToDelete);
+			delete toDelete;
+			toDelete = NULL;
+		}
+	}
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -129,6 +210,36 @@ void CharacterBub::Update(size_t deltaTime, SDL_Event e)
 				SetState(CHARACTERSTATE_JUMP);
 				Jump();
 			}
+		}
+
+		if (VirtualJoypad::Instance()->DownArrow && mCanSpawnRainbow)
+		{
+			bool collidingWithRainbow = false;
+
+			for (unsigned int j = 0; j < mRainbows.size(); j++)
+			{
+				if (Collisions::Instance()->Box(GetCollisionBox(), mRainbows[j]->GetCollisionBox()))
+				{
+					collidingWithRainbow = true;
+					break;
+				}
+			}
+
+			if (!collidingWithRainbow)
+			{
+				Vector2D pos = GetPosition();
+				pos.x += 10;
+				if (GetFacing() == FACING_RIGHT)
+					pos.x += GetCollisionBox().width - 15;
+				pos.y -= GetCollisionBox().height*0.3f;
+				CreateRainbow(pos, GetRainbowsAllowed());
+
+				mCanSpawnRainbow = false;
+			}
+		}
+		else if (!VirtualJoypad::Instance()->DownArrow)
+		{
+			mCanSpawnRainbow = true;
 		}
 	}
 }
@@ -246,6 +357,28 @@ void CharacterBub::SetState(CHARACTER_STATE newState)
 			break;
 		}
 	}
+}
+
+void CharacterBub::CreateRainbow(Vector2D position, int numberOfRainbows)
+{
+	double xOffset = 0.0;
+	float  spwnDelay = 0.0f;
+	do
+	{
+		if (GetFacing() == FACING_LEFT)
+			position.x -= xOffset;
+		else
+			position.x += xOffset;
+
+		CharacterRainbow* rainbowCharacter = new CharacterRainbow(mRenderer, "Images/RainbowIslands/Rainbow.png", position, GetFacing(), spwnDelay);
+		if (rainbowCharacter->GetFacing() == FACING_LEFT)
+			rainbowCharacter->SetPosition(Vector2D(rainbowCharacter->GetPosition().x - rainbowCharacter->GetCollisionBox().width, rainbowCharacter->GetPosition().y));
+
+		mRainbows.push_back(rainbowCharacter);
+		numberOfRainbows--;
+		xOffset = rainbowCharacter->GetCollisionBox().width - 10.0;
+		spwnDelay += 200;
+	} while (numberOfRainbows > 0);
 }
 
 //--------------------------------------------------------------------------------------------------

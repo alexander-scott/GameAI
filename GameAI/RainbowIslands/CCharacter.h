@@ -16,6 +16,7 @@
 #include "CNeuralNet.h"
 #include "utils.h"
 #include "Constants_RainbowIslands.h"
+#include "LevelMap.h"
 
 #include "CharacterBub.h"
 #include "CharacterFruit.h"
@@ -41,19 +42,23 @@ private:
 
 	int				m_previousInput;
 
+	vector<Vector2D> surroundingPositions;
+	vector<double> surroundings;
+
 public:
 
 	CCharacter(SDL_Renderer* renderer, string imagePath, LevelMap* map, Vector2D startPosition);
 
 	//updates the ANN with information from the sweepers enviroment
-	bool			Update(int yPositionToComplete, vector<Character*> enemies, vector<CharacterFruit*> fruit);
-	virtual void	Update(size_t deltaTime, SDL_Event e);
+	bool			UpdateNN(int yPositionToComplete, vector<Character*> enemies, vector<CharacterFruit*> fruit);
 
 	//returns a vector to the closest fruit
-	Vector2D		GetClosestFruit(vector<CharacterFruit*> &objects);
+	CharacterFruit*		GetClosestFruit(vector<CharacterFruit*> &objects);
 
 	//returns a vector away from the closest enemy
-	Vector2D		GetClosestEnemy(vector<Character*> &objects);
+	Character*		GetClosestEnemy(vector<Character*> &objects);
+
+	vector<double> GetSurroundings(Vector2D enemyLocation, vector<CharacterRainbow*> _mRainbows);
 
 	void			Reset();
 

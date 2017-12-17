@@ -18,8 +18,6 @@
 #include "VirtualJoypad.h"
 using namespace::std;
 
-int RainbowOffsets[] = { 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,22,22,23,23,
-						 23,22,22,22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0, };
 //--------------------------------------------------------------------------------------------------
 
 GameScreen_RainbowIslands::GameScreen_RainbowIslands(SDL_Renderer* renderer) : GameScreen(renderer)
@@ -69,9 +67,6 @@ GameScreen_RainbowIslands::~GameScreen_RainbowIslands()
 	//Fruit.
 	mFruit.clear();
 
-	//Rainbows.
-	mRainbows.clear();
-
 	if (m_pGA)
 	{
 		delete	m_pGA;
@@ -102,12 +97,10 @@ void GameScreen_RainbowIslands::Render()
 		DrawDebugCircle(mEnemies[i]->GetCentralPosition(), mEnemies[i]->GetCollisionRadius(), 255, 0, 0);
 	}
 
-	//Draw the Rainbows.
-	for (unsigned int i = 0; i < mRainbows.size(); i++)
+	//Draw the rainbows
+	for (int i = 0; i < kNumOfCharacters; i++)
 	{
-		mRainbows[i]->Render();
-		if(mRainbows[i]->CanKill())
-			DrawDebugCircle(mRainbows[i]->GetStrikePosition(), mRainbows[i]->GetCollisionRadius(), 255, 255, 255);
+		m_vecCharacters[i]->RenderRainbows();
 	}
 
 	if (!USE_NEURAL_NETWORK)
@@ -176,14 +169,17 @@ void GameScreen_RainbowIslands::Update(size_t deltaTime, SDL_Event e)
 	if (USE_NEURAL_NETWORK)
 	{
 		UpdateCharacterNN(deltaTime, e);
-		UpdateRainbowsNN(deltaTime, e);
 	}
 	else 
 	{
 		UpdateCharacter(deltaTime, e);
 		UpdateFruit(deltaTime, e);
 		UpdateEnemies(deltaTime, e);
-		UpdateRainbows(deltaTime, e);
+	}
+
+	for (int i = 0; i < kNumOfCharacters; i++)
+	{
+		m_vecCharacters[i]->UpdateRainbows(deltaTime, e, mEnemies);
 	}
 
 	//We have a chest, but is it open yet.
@@ -193,73 +189,6 @@ void GameScreen_RainbowIslands::Update(size_t deltaTime, SDL_Event e)
 		if (mChest->IsChestOpen() && !mTriggeredChestSpawns)
 		{
 			TriggerChestSpawns();
-		}
-	}
-
-	if (USE_NEURAL_NETWORK)
-	{
-		for (int i = 0; i < kNumOfCharacters; i++)
-		{
-			if (m_vecCharacters[i]->SpawnARainbow())
-			{
-				bool collidingWithRainbow = false;
-
-				for (unsigned int j = 0; j < mRainbows.size(); j++)
-				{
-					if (Collisions::Instance()->Box(m_vecCharacters[i]->GetCollisionBox(), mRainbows[j]->GetCollisionBox()))
-					{
-						collidingWithRainbow = true;
-						break;
-					}
-				}
-
-				if (!collidingWithRainbow)
-				{
-					Vector2D pos = m_vecCharacters[i]->GetPosition();
-					pos.x += 10;
-					if (m_vecCharacters[i]->GetFacing() == FACING_RIGHT)
-						pos.x += m_vecCharacters[i]->GetCollisionBox().width - 15;
-					pos.y -= m_vecCharacters[i]->GetCollisionBox().height*0.3f;
-					CreateRainbow(pos, m_vecCharacters[i]->GetRainbowsAllowed(), m_vecCharacters[i]);
-
-					m_vecCharacters[i]->RainbowSpawned();
-				}
-			}
-		}
-	}
-	else 
-	{
-		//--------------------------------------------------------------------------------------------------
-		//Check if we need to create a new rainbow.
-		//--------------------------------------------------------------------------------------------------
-		if (VirtualJoypad::Instance()->DownArrow && mCanSpawnRainbow)
-		{
-			bool collidingWithRainbow = false;
-
-			for (unsigned int i = 0; i < mRainbows.size(); i++)
-			{
-				if (Collisions::Instance()->Box(mBubCharacter->GetCollisionBox(), mRainbows[i]->GetCollisionBox()))
-				{
-					collidingWithRainbow = true;
-					break;
-				}
-			}
-
-			if (!collidingWithRainbow)
-			{
-				Vector2D pos = mBubCharacter->GetPosition();
-				pos.x += 10;
-				if (mBubCharacter->GetFacing() == FACING_RIGHT)
-					pos.x += mBubCharacter->GetCollisionBox().width - 15;
-				pos.y -= mBubCharacter->GetCollisionBox().height*0.3f;
-				CreateRainbow(pos, mBubCharacter->GetRainbowsAllowed());
-
-				mCanSpawnRainbow = false;
-			}
-		}
-		else if (!VirtualJoypad::Instance()->DownArrow)
-		{
-			mCanSpawnRainbow = true;
 		}
 	}
 }
@@ -288,7 +217,7 @@ void GameScreen_RainbowIslands::UpdateCharacterNN(size_t deltaTime, SDL_Event e)
 		for (int iChar = 0; iChar < kNumOfCharacters; ++iChar)
 		{
 			//update the NN and position
-			m_vecCharacters[iChar]->Update(Y_POSITION_TO_COMPLETE, mEnemies, mFruit);
+			m_vecCharacters[iChar]->UpdateNN(Y_POSITION_TO_COMPLETE, mEnemies, mFruit);
 
 			//--------------------------------------------------------------------------------------------------
 			//Update the Fruit.
@@ -528,153 +457,6 @@ void GameScreen_RainbowIslands::UpdateFruit(size_t deltaTime, SDL_Event e)
 
 //--------------------------------------------------------------------------------------------------
 
-void GameScreen_RainbowIslands::UpdateRainbows(size_t deltaTime, SDL_Event e)
-{
-	//--------------------------------------------------------------------------------------------------
-	//Update the Rainbows.
-	//--------------------------------------------------------------------------------------------------
-	
-	//Need to turn flag off each frame incase the rainbow disapated.
-	mBubCharacter->SetOnARainbow(false);
-
-	if (!mRainbows.empty())
-	{
-		int rainbowIndexToDelete = -1;
-
-		for (unsigned int i = 0; i < mRainbows.size(); i++)
-		{
-			int xPosition = (int)mBubCharacter->GetPosition().x + (int)(mBubCharacter->GetCollisionBox().width*0.5f);
-			int footPosition = (int)(mBubCharacter->GetPosition().y + mBubCharacter->GetCollisionBox().height);
-
-			//Update the rainbow.
-			mRainbows[i]->Update(deltaTime, e);
-
-			if (!mRainbows[i]->GetAlive())
-				rainbowIndexToDelete = i;
-			else
-			{
-				//check if the player has collided with it.
-				if (!mBubCharacter->IsJumping())
-				{
-					if (Collisions::Instance()->PointInBox(Vector2D(xPosition, footPosition), mRainbows[i]->GetCollisionBox()))
-					{
-						mBubCharacter->SetState(CHARACTERSTATE_WALK);
-						mBubCharacter->SetOnARainbow(true);
-						int xPointOfCollision = (int)(mRainbows[i]->GetPosition().x + mRainbows[i]->GetCollisionBox().width - xPosition);
-						if (mBubCharacter->GetFacing() == FACING_RIGHT)
-							xPointOfCollision = (int)(xPosition - mRainbows[i]->GetPosition().x);
-
-						//We don't want to pop between walking on different rainbows. Ensure the switch between rainbows looks 'realistic'
-						double distanceBetweenPoints = footPosition - (mRainbows[i]->GetPosition().y - RainbowOffsets[xPointOfCollision]);
-						if(distanceBetweenPoints < 40.0)
-							mBubCharacter->SetPosition(Vector2D(mBubCharacter->GetPosition().x, mRainbows[i]->GetPosition().y - RainbowOffsets[xPointOfCollision]));
-					}
-				}
-
-				//Check for collisions with enemies.
-				for (unsigned int j = 0; j < mEnemies.size(); j++)
-				{
-					if (mRainbows[i]->CanKill())
-					{
-						if (Collisions::Instance()->Circle(mRainbows[i]->GetStrikePosition(), mRainbows[i]->GetCollisionRadius(), mEnemies[j]->GetPosition(), mEnemies[j]->GetCollisionRadius()))
-						{
-							mEnemies[j]->SetAlive(false);
-						}
-					}
-				}
-			}
-		}
-
-		//--------------------------------------------------------------------------------------------------
-		//Remove a dead rainbow - 1 each update.
-		//--------------------------------------------------------------------------------------------------
-		if (rainbowIndexToDelete != -1)
-		{
-			Character* toDelete = mRainbows[rainbowIndexToDelete];
-			mRainbows.erase(mRainbows.begin() + rainbowIndexToDelete);
-			delete toDelete;
-			toDelete = NULL;
-		}
-	}
-}
-
-void GameScreen_RainbowIslands::UpdateRainbowsNN(size_t deltaTime, SDL_Event e)
-{
-	//--------------------------------------------------------------------------------------------------
-	//Update the Rainbows.
-	//--------------------------------------------------------------------------------------------------
-
-	for (int i = 0; i < kNumOfCharacters; i++)
-	{
-		m_vecCharacters[i]->SetOnARainbow(false);
-	}
-
-	if (!mRainbows.empty())
-	{
-		int rainbowIndexToDelete = -1;
-
-		for (unsigned int iRainbow = 0; iRainbow < mRainbows.size(); iRainbow++)
-		{
-			//Update the rainbow.
-			mRainbows[iRainbow]->Update(deltaTime, e);
-
-			if (!mRainbows[iRainbow]->GetAlive())
-				rainbowIndexToDelete = iRainbow;
-			else
-			{
-				for (int iCharacter = 0; iCharacter < kNumOfCharacters; iCharacter++)
-				{
-					int xPosition = (int)m_vecCharacters[iCharacter]->GetPosition().x + (int)(m_vecCharacters[iCharacter]->GetCollisionBox().width*0.5f);
-					int footPosition = (int)(m_vecCharacters[iCharacter]->GetPosition().y + m_vecCharacters[iCharacter]->GetCollisionBox().height);
-
-					//check if the player has collided with it.
-					if (!m_vecCharacters[iCharacter]->IsJumping())
-					{
-						if (Collisions::Instance()->PointInBox(Vector2D(xPosition, footPosition), mRainbows[iRainbow]->GetCollisionBox()))
-						{
-							m_vecCharacters[iCharacter]->SetState(CHARACTERSTATE_WALK);
-							m_vecCharacters[iCharacter]->SetOnARainbow(true);
-							int xPointOfCollision = (int)(mRainbows[iRainbow]->GetPosition().x + mRainbows[iRainbow]->GetCollisionBox().width - xPosition);
-							if (m_vecCharacters[iCharacter]->GetFacing() == FACING_RIGHT)
-								xPointOfCollision = (int)(xPosition - mRainbows[iRainbow]->GetPosition().x);
-
-							//We don't want to pop between walking on different rainbows. Ensure the switch between rainbows looks 'realistic'
-							double distanceBetweenPoints = footPosition - (mRainbows[iRainbow]->GetPosition().y - RainbowOffsets[xPointOfCollision]);
-							if (distanceBetweenPoints < 40.0)
-								m_vecCharacters[iCharacter]->SetPosition(Vector2D(m_vecCharacters[iCharacter]->GetPosition().x, mRainbows[iRainbow]->GetPosition().y - RainbowOffsets[xPointOfCollision]));
-						}
-					}
-
-					//Check for collisions with enemies.
-					for (unsigned int iEnemy = 0; iEnemy < mEnemies.size(); iEnemy++)
-					{
-						if (mRainbows[iRainbow]->CanKill())
-						{
-							if (Collisions::Instance()->Circle(mRainbows[iRainbow]->GetStrikePosition(), mRainbows[iRainbow]->GetCollisionRadius(), mEnemies[iEnemy]->GetPosition(), mEnemies[iEnemy]->GetCollisionRadius()))
-							{
-								mEnemies[iEnemy]->SetAlive(false);
-							}
-						}
-					}
-				}
-			}
-		}
-
-		//--------------------------------------------------------------------------------------------------
-		//Remove a dead rainbow - 1 each update.
-		//--------------------------------------------------------------------------------------------------
-		if (rainbowIndexToDelete != -1)
-		{
-			Character* toDelete = mRainbows[rainbowIndexToDelete];
-			mRainbows.erase(mRainbows.begin() + rainbowIndexToDelete);
-			delete toDelete;
-			toDelete = NULL;
-		}
-	}
-}
-
-//--------------------------------------------------------------------------------------------------
-
 bool GameScreen_RainbowIslands::SetUpLevel()
 {
 	//Load the background texture.
@@ -767,9 +549,6 @@ void GameScreen_RainbowIslands::RestartLevel()
 
 	//Fruit.
 	mFruit.clear();
-
-	//Rainbows.
-	mRainbows.clear();
 
 	//Treasure chest.
 	if (mChest != NULL)
@@ -967,52 +746,6 @@ void GameScreen_RainbowIslands::CreateCaterpillar(Vector2D position, FACING dire
 	Character* tempCharacter = (Character*)caterpillarCharacter;
 	mEnemies.push_back(tempCharacter);
 	caterpillarCharacter = NULL;
-}
-
-//--------------------------------------------------------------------------------------------------
-
-void GameScreen_RainbowIslands::CreateRainbow(Vector2D position, int numberOfRainbows)
-{
-	double xOffset   = 0.0;
-	float  spwnDelay = 0.0f;
-	do
-	{
-		if(mBubCharacter->GetFacing() == FACING_LEFT)
-			position.x -= xOffset;
-		else
-			position.x += xOffset;
-		
-		CharacterRainbow* rainbowCharacter = new CharacterRainbow(mRenderer, "Images/RainbowIslands/Rainbow.png", position, mBubCharacter->GetFacing(), spwnDelay);
-		if (rainbowCharacter->GetFacing() == FACING_LEFT)
-			rainbowCharacter->SetPosition(Vector2D(rainbowCharacter->GetPosition().x - rainbowCharacter->GetCollisionBox().width, rainbowCharacter->GetPosition().y));
-		
-		mRainbows.push_back(rainbowCharacter);
-		numberOfRainbows--;
-		xOffset = rainbowCharacter->GetCollisionBox().width-10.0;
-		spwnDelay += 200;
-	} while (numberOfRainbows > 0);
-}
-
-void GameScreen_RainbowIslands::CreateRainbow(Vector2D position, int numberOfRainbows, CCharacter * character)
-{
-	double xOffset = 0.0;
-	float  spwnDelay = 0.0f;
-	do
-	{
-		if (character->GetFacing() == FACING_LEFT)
-			position.x -= xOffset;
-		else
-			position.x += xOffset;
-
-		CharacterRainbow* rainbowCharacter = new CharacterRainbow(mRenderer, "Images/RainbowIslands/Rainbow.png", position, character->GetFacing(), spwnDelay);
-		if (rainbowCharacter->GetFacing() == FACING_LEFT)
-			rainbowCharacter->SetPosition(Vector2D(rainbowCharacter->GetPosition().x - rainbowCharacter->GetCollisionBox().width, rainbowCharacter->GetPosition().y));
-
-		mRainbows.push_back(rainbowCharacter);
-		numberOfRainbows--;
-		xOffset = rainbowCharacter->GetCollisionBox().width - 10.0;
-		spwnDelay += 200;
-	} while (numberOfRainbows > 0);
 }
 
 //--------------------------------------------------------------------------------------------------
