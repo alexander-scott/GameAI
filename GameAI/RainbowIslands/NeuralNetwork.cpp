@@ -212,13 +212,13 @@ bool NeuralNetwork::NetworkTrainingEpoch(vector<double> inputs, vector<double> o
 		while (curWeight != v_Layers[1].v_Neurons[op].v_Weights.end() - 1)
 		{        
 			//calculate the new weight based on the backprop rules
-			*curWeight += err * learningRate * curNrnHid->m_dActivation;
+			*curWeight += err * kLearningRate * curNrnHid->m_dActivation;
 			++curWeight;
 			++curNrnHid;
 		}      
 			
 		//and the bias for this neuron      
-		*curWeight += err * learningRate * kBias;
+		*curWeight += err * kLearningRate * kBias;
 	}
 
 	//**moving backwards to the hidden layer**    
@@ -246,10 +246,10 @@ bool NeuralNetwork::NetworkTrainingEpoch(vector<double> inputs, vector<double> o
 		for (int w=0; w < inputs.size(); ++w)
 		{        
 			//calculate the new weight based on the backprop rules        
-			curNrnHid->v_Weights[w] += err * learningRate * inputs[w];
+			curNrnHid->v_Weights[w] += err * kLearningRate * inputs[w];
 		}      
 		//and the bias      
-		curNrnHid->v_Weights[kNumInputs] += err * learningRate * kBias;
+		curNrnHid->v_Weights[kNumInputs] += err * kLearningRate * kBias;
 		++curNrnHid;      
 		++n;    
 	}  

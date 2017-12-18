@@ -32,8 +32,8 @@ GameScreen_RainbowIslands::GameScreen_RainbowIslands(SDL_Renderer* renderer) : G
 	SetUpLevel();
 
 	mNeuralNetwork = new NeuralNetwork();
-	mGenAlgUpdateTimer = 0;
-	mCurrentPopulationCount = 0;
+	mCurrGenUpdateTimer = 0;
+	mCurrGenGenomeIndex = 0;
 	mGenerationCount = 0;
 	mRainbowsFired = 0;
 
@@ -42,17 +42,18 @@ GameScreen_RainbowIslands::GameScreen_RainbowIslands(SDL_Renderer* renderer) : G
 	int m_NumWeightsInNN = mNeuralNetwork->GetNumberOfWeights();
 
 	//initialize the Genetic Algorithm class
-	mGeneticAlgorithm = new GeneticAlgorithm(kPopSize, kRainbowMutationRate, kRainbowCrossoverRate, m_NumWeightsInNN);
+	mGeneticAlgorithm = new GeneticAlgorithm(kPopulationLimit, kRainbowMutationRate, kRainbowCrossoverRate, m_NumWeightsInNN);
 
 	//Get the weights from the GA and insert into Bub's brains
-	m_vecSetOfWeights = mGeneticAlgorithm->GetChromos();
-	mNeuralNetwork->PutWeights(mGeneticAlgorithm->GetChromos()[mCurrentPopulationCount].vWeights);
+	mCurrGenGenomes = mGeneticAlgorithm->GetChromos();
+	mNeuralNetwork->PutWeights(mGeneticAlgorithm->GetChromos()[mCurrGenGenomeIndex].vWeights);
 	
-	cout << "Current Weight Set: " << mCurrentPopulationCount << endl;
+	cout << "Current Weight Set: " << mCurrGenGenomeIndex << endl;
 
-	if (!ReadWeightsFromFile()) {
-		cout << "ERROR OCCURED LOADING WEIGHTS" << endl;
-		mNeuralNetwork->PutWeights(m_vecSetOfWeights[mCurrentPopulationCount].vWeights);
+	if (!ReadWeightsFromFile()) 
+	{
+		cout << "Error loading weights" << endl;
+		mNeuralNetwork->PutWeights(mCurrGenGenomes[mCurrGenGenomeIndex].vWeights);
 	}
 }
 
@@ -65,8 +66,8 @@ GameScreen_RainbowIslands::~GameScreen_RainbowIslands()
 	mBackgroundTexture = NULL;
 
 	//Player character.
-	delete mBubCharacter;
-	mBubCharacter = NULL;
+	delete mCharacter;
+	mCharacter = NULL;
 
 	//Level map.
 	delete mLevelMap;
@@ -125,8 +126,8 @@ void GameScreen_RainbowIslands::Render()
 	}
 
 	//Draw the player.
-	mBubCharacter->Render();
-	DrawDebugCircle(mBubCharacter->GetCentralPosition(), mBubCharacter->GetCollisionRadius(), 0, 255, 0);
+	mCharacter->Render();
+	DrawDebugCircle(mCharacter->GetCentralPosition(), mCharacter->GetCollisionRadius(), 0, 255, 0);
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -143,7 +144,7 @@ void GameScreen_RainbowIslands::RenderBackground()
 				int num = mLevelMap->GetBackgroundTileAt(y, x);
 				int w = TILE_WIDTH*(num % kTileSpriteSheetWidth);
 				int h = TILE_HEIGHT*(num / kTileSpriteSheetWidth);
-				//								{XPos, YPos, WidthOfSingleSprite, HeightOfSingleSprite}
+
 				SDL_Rect portionOfSpritesheet = { w, h, TILE_WIDTH, TILE_HEIGHT };
 
 				//Determine where you want it drawn.
@@ -160,12 +161,12 @@ void GameScreen_RainbowIslands::RenderBackground()
 
 void GameScreen_RainbowIslands::Update(size_t deltaTime, SDL_Event e)
 {
-	mGenAlgUpdateTimer += deltaTime;
+	mCurrGenUpdateTimer += deltaTime;
 
 	//--------------------------------------------------------------------------------------------------
 	//Update the Neural network.
 	//--------------------------------------------------------------------------------------------------
-	NeuraliseTheNetworkOfNeural();
+	UpdateNeuralNetwork();
 
 	//--------------------------------------------------------------------------------------------------
 	//Update the Virtual Joypad.
@@ -184,12 +185,11 @@ void GameScreen_RainbowIslands::Update(size_t deltaTime, SDL_Event e)
 	//--------------------------------------------------------------------------------------------------
 	//Update the player.
 	//--------------------------------------------------------------------------------------------------
-	mBubCharacter->Update(deltaTime, e);
-	if (!mBubCharacter->GetAlive())
+	mCharacter->Update(deltaTime, e);
+	if (!mCharacter->GetAlive())
 		RestartLevel();
-	else if (mBubCharacter->GetCentralPosition().y < Y_POSITION_TO_COMPLETE)
+	else if (mCharacter->GetCentralPosition().y < Y_POSITION_TO_COMPLETE)
 		CreateChest(Vector2D(kRainbowIslandsScreenWidth*0.25f, -50.0f));
-
 
 	//--------------------------------------------------------------------------------------------------
 	//Update the game objects.
@@ -217,7 +217,7 @@ void GameScreen_RainbowIslands::Update(size_t deltaTime, SDL_Event e)
 		
 		for (unsigned int i = 0; i < mRainbows.size(); i++)
 		{
-			if (Collisions::Instance()->Box(mBubCharacter->GetCollisionBox(), mRainbows[i]->GetCollisionBox()))
+			if (Collisions::Instance()->Box(mCharacter->GetCollisionBox(), mRainbows[i]->GetCollisionBox()))
 			{
 				collidingWithRainbow = true;
 				break;
@@ -226,12 +226,12 @@ void GameScreen_RainbowIslands::Update(size_t deltaTime, SDL_Event e)
 
 		if (!collidingWithRainbow)
 		{
-			Vector2D pos = mBubCharacter->GetPosition();
+			Vector2D pos = mCharacter->GetPosition();
 			pos.x += 10;
-			if (mBubCharacter->GetFacing() == FACING_RIGHT)
-				pos.x += mBubCharacter->GetCollisionBox().width-15;
-			pos.y -= mBubCharacter->GetCollisionBox().height*0.3f;
-			CreateRainbow(pos, mBubCharacter->GetRainbowsAllowed());
+			if (mCharacter->GetFacing() == FACING_RIGHT)
+				pos.x += mCharacter->GetCollisionBox().width-15;
+			pos.y -= mCharacter->GetCollisionBox().height*0.3f;
+			CreateRainbow(pos, mCharacter->GetRainbowsAllowed());
 
 			mCanSpawnRainbow = false;
 		}
@@ -271,9 +271,9 @@ void GameScreen_RainbowIslands::UpdateEnemies(size_t deltaTime, SDL_Event e)
 			mEnemies[i]->Update(deltaTime, e);
 
 			//Check to see if the enemy collides with the player.
-			if (Collisions::Instance()->Circle(mEnemies[i]->GetCentralPosition(), mEnemies[i]->GetCollisionRadius(), mBubCharacter->GetCentralPosition(), mBubCharacter->GetCollisionRadius()))
+			if (Collisions::Instance()->Circle(mEnemies[i]->GetCentralPosition(), mEnemies[i]->GetCollisionRadius(), mCharacter->GetCentralPosition(), mCharacter->GetCollisionRadius()))
 			{
-				mBubCharacter->SetState(CHARACTERSTATE_PLAYER_DEATH);
+				mCharacter->SetState(CHARACTERSTATE_PLAYER_DEATH);
 			}
 
 			//If the enemy is no longer alive, then schedule it for deletion.
@@ -316,7 +316,7 @@ void GameScreen_RainbowIslands::UpdateFruit(size_t deltaTime, SDL_Event e)
 			mFruit[i]->Update(deltaTime, e);
 
 			//check if the player has collided with it.
-			if (Collisions::Instance()->Circle(mFruit[i]->GetCentralPosition(), mFruit[i]->GetCollisionRadius(), mBubCharacter->GetCentralPosition(), mBubCharacter->GetCollisionRadius()))
+			if (Collisions::Instance()->Circle(mFruit[i]->GetCentralPosition(), mFruit[i]->GetCollisionRadius(), mCharacter->GetCentralPosition(), mCharacter->GetCollisionRadius()))
 			{
 				mFruit[i]->SetAlive(false);
 				fruitIndexToDelete = i;
@@ -328,7 +328,7 @@ void GameScreen_RainbowIslands::UpdateFruit(size_t deltaTime, SDL_Event e)
 		//--------------------------------------------------------------------------------------------------
 		if(fruitIndexToDelete != -1)
 		{
-			mBubCharacter->AddPoints();
+			mCharacter->AddPoints();
 
 			Character* toDelete = mFruit[fruitIndexToDelete];
 			mFruit.erase(mFruit.begin() + fruitIndexToDelete);
@@ -347,7 +347,7 @@ void GameScreen_RainbowIslands::UpdateRainbows(size_t deltaTime, SDL_Event e)
 	//--------------------------------------------------------------------------------------------------
 	
 	//Need to turn flag off each frame incase the rainbow disapated.
-	mBubCharacter->SetOnARainbow(false);
+	mCharacter->SetOnARainbow(false);
 
 	if (!mRainbows.empty())
 	{
@@ -355,8 +355,8 @@ void GameScreen_RainbowIslands::UpdateRainbows(size_t deltaTime, SDL_Event e)
 
 		for (unsigned int i = 0; i < mRainbows.size(); i++)
 		{
-			int xPosition = (int)mBubCharacter->GetPosition().x + (int)(mBubCharacter->GetCollisionBox().width*0.5f);
-			int footPosition = (int)(mBubCharacter->GetPosition().y + mBubCharacter->GetCollisionBox().height);
+			int xPosition = (int)mCharacter->GetPosition().x + (int)(mCharacter->GetCollisionBox().width*0.5f);
+			int footPosition = (int)(mCharacter->GetPosition().y + mCharacter->GetCollisionBox().height);
 
 			//Update the rainbow.
 			mRainbows[i]->Update(deltaTime, e);
@@ -366,20 +366,20 @@ void GameScreen_RainbowIslands::UpdateRainbows(size_t deltaTime, SDL_Event e)
 			else
 			{
 				//check if the player has collided with it.
-				if (!mBubCharacter->IsJumping())
+				if (!mCharacter->IsJumping())
 				{
 					if (Collisions::Instance()->PointInBox(Vector2D(xPosition, footPosition), mRainbows[i]->GetCollisionBox()))
 					{
-						mBubCharacter->SetState(CHARACTERSTATE_WALK);
-						mBubCharacter->SetOnARainbow(true);
+						mCharacter->SetState(CHARACTERSTATE_WALK);
+						mCharacter->SetOnARainbow(true);
 						int xPointOfCollision = (int)(mRainbows[i]->GetPosition().x + mRainbows[i]->GetCollisionBox().width - xPosition);
-						if (mBubCharacter->GetFacing() == FACING_RIGHT)
+						if (mCharacter->GetFacing() == FACING_RIGHT)
 							xPointOfCollision = (int)(xPosition - mRainbows[i]->GetPosition().x);
 
 						//We don't want to pop between walking on different rainbows. Ensure the switch between rainbows looks 'realistic'
 						double distanceBetweenPoints = footPosition - (mRainbows[i]->GetPosition().y - RainbowOffsets[xPointOfCollision]);
 						if(distanceBetweenPoints < 40.0)
-							mBubCharacter->SetPosition(Vector2D(mBubCharacter->GetPosition().x, mRainbows[i]->GetPosition().y - RainbowOffsets[xPointOfCollision]));
+							mCharacter->SetPosition(Vector2D(mCharacter->GetPosition().x, mRainbows[i]->GetPosition().y - RainbowOffsets[xPointOfCollision]));
 					}
 				}
 
@@ -437,57 +437,58 @@ bool GameScreen_RainbowIslands::SetUpLevel()
 
 void GameScreen_RainbowIslands::RestartLevel()
 {
-	//TRAIN NN
-	float pointMult = 1, timeMult = 0.001, heightMult = 1000;
-	float points = mBubCharacter->GetPoints() * pointMult;
-	float time = mGenAlgUpdateTimer * timeMult;
-	float height = min((1 - (mBubCharacter->GetCentralPosition().y / kRainbowIslandsScreenHeight)) * heightMult, 1000);
-	m_vecSetOfWeights[mCurrentPopulationCount].dFitness = points + time + height - mRainbowsFired;
-	cout << "Score : " << m_vecSetOfWeights[mCurrentPopulationCount].dFitness << endl;
+	//--------------------------------------------------------------------------------------------------
+	// Train the Neural Network
+	//--------------------------------------------------------------------------------------------------
+	float pointScore = mCharacter->GetPoints() * kPointMultiplier;
+	float timeScore = mCurrGenUpdateTimer * kTimeMultiplier;
+	float heightScore = min((1 - (mCharacter->GetCentralPosition().y / kRainbowIslandsScreenHeight)) * kHeightMultiplier, 1000);
 
-	mCurrentPopulationCount++;
-	mGenAlgUpdateTimer = 0;
+	// Calculate the fitness for the current genome in this generation. Points + Time + Height - RainbowsFired
+	mCurrGenGenomes[mCurrGenGenomeIndex].dFitness = pointScore + timeScore + heightScore - mRainbowsFired;
+
+	cout << "Score : " << mCurrGenGenomes[mCurrGenGenomeIndex].dFitness << endl;
+
+	// Increment the genome index in this generation
+	mCurrGenGenomeIndex++;
+
+	mCurrGenUpdateTimer = 0;
 	mRainbowsFired = 0;
 
-	//BACK PROPOGATION
-	if (mCurrentPopulationCount == (int)kPopSize)
+	//--------------------------------------------------------------------------------------------------
+	// Back Propagate the Genetic Algorithm
+	//--------------------------------------------------------------------------------------------------
+	if (mCurrGenGenomeIndex == (int)kPopulationLimit)
 	{
-		mGenerationCount++;
+		mGenerationCount++; // Increment the generation
 
-		cout << kPopSize << " Sets of Chromosomes have been created. Selection/Crossover/Mutation begins." << endl;
+		cout << kPopulationLimit << " Sets of Chromosomes have been created. Selection/Crossover/Mutation begins." << endl;
 		cout << "Current Generation : " << mGenerationCount << endl;
 
-		mCurrentPopulationCount = 0;
+		mCurrGenGenomeIndex = 0;
 
-		m_vecSetOfWeights = mGeneticAlgorithm->Epoch(m_vecSetOfWeights);
+		// Evolve the genomes of this generation and return a new set of genomes/weights
+		mCurrGenGenomes = mGeneticAlgorithm->Epoch(mCurrGenGenomes);
 
-		mNeuralNetwork->PutWeights(mGeneticAlgorithm->GetChromos()[mCurrentPopulationCount].vWeights);
+		// Insert the newly evolved genomes into the neural network
+		mNeuralNetwork->PutWeights(mGeneticAlgorithm->GetChromos()[mCurrGenGenomeIndex].vWeights);
 
-		//update the stats to be used in our stat window -- CAN BE REMOVED
-		mVecAvFitness.push_back(mGeneticAlgorithm->AverageFitness());
-		mVecBestFitness.push_back(mGeneticAlgorithm->BestFitness());
+		// Update the stats
+		mCurrGenAvgFitness.push_back(mGeneticAlgorithm->AverageFitness());
+		mCurrGenBestFitness.push_back(mGeneticAlgorithm->BestFitness());
 
-		//incr the gens
-
-		//reset cycles
-
-		//run the GA to create a new population
-
-		//insert the new (hopefully)improved brains back into the sweepers
-		//and reset their positions etc
-
-		//save to file
+		// Save the weights to a file
 		SaveWeightsToFile();
 	}
 
-	mNeuralNetwork->PutWeights(m_vecSetOfWeights[mCurrentPopulationCount].vWeights);
+	mNeuralNetwork->PutWeights(mCurrGenGenomes[mCurrGenGenomeIndex].vWeights);
 
-	cout << "Current Weight Set: " << mCurrentPopulationCount << endl;
+	cout << "Current Weight Set: " << mCurrGenGenomeIndex << endl;
 
 	//Clean up current characters.
 	//Player character.
-	delete mBubCharacter;
-	mBubCharacter = NULL;
+	delete mCharacter;
+	mCharacter = NULL;
 
 	//Level map.
 	delete mLevelMap;
@@ -527,7 +528,7 @@ void GameScreen_RainbowIslands::RestartLevel()
 void GameScreen_RainbowIslands::CreateStartingCharacters()
 {
 	//Set up the player character.
-	mBubCharacter = new CharacterAI(mRenderer, "Images/RainbowIslands/bub.png", mLevelMap, Vector2D(100, 570));
+	mCharacter = new CharacterAI(mRenderer, "Images/RainbowIslands/bub.png", mLevelMap, Vector2D(100, 570));
 	mCanSpawnRainbow = true;
 
 	//Set up the bad guys.
@@ -680,12 +681,12 @@ void GameScreen_RainbowIslands::CreateRainbow(Vector2D position, int numberOfRai
 	float  spwnDelay = 0.0f;
 	do
 	{
-		if(mBubCharacter->GetFacing() == FACING_LEFT)
+		if(mCharacter->GetFacing() == FACING_LEFT)
 			position.x -= xOffset;
 		else
 			position.x += xOffset;
 		
-		CharacterRainbow* rainbowCharacter = new CharacterRainbow(mRenderer, "Images/RainbowIslands/Rainbow.png", position, mBubCharacter->GetFacing(), spwnDelay);
+		CharacterRainbow* rainbowCharacter = new CharacterRainbow(mRenderer, "Images/RainbowIslands/Rainbow.png", position, mCharacter->GetFacing(), spwnDelay);
 		if (rainbowCharacter->GetFacing() == FACING_LEFT)
 			rainbowCharacter->SetPosition(Vector2D(rainbowCharacter->GetPosition().x - rainbowCharacter->GetCollisionBox().width, rainbowCharacter->GetPosition().y));
 		
@@ -745,7 +746,7 @@ void GameScreen_RainbowIslands::TriggerChestSpawns()
 
 //--------------------------------------------------------------------------------------------------
 
-void GameScreen_RainbowIslands::NeuraliseTheNetworkOfNeural()
+void GameScreen_RainbowIslands::UpdateNeuralNetwork()
 {
 	/*
 	genrations++;
@@ -758,29 +759,29 @@ void GameScreen_RainbowIslands::NeuraliseTheNetworkOfNeural()
 	*/
 	vector<double> inputs;
 
-	mClosestFruit = FindClosestFruit(); //pointer
-	mClosestEnemy = FindClosestEnemy(); //pointer
+	mClosestFruit = FindClosestFruit(); // Get a pointer to the closest fruit
+	mClosestEnemy = FindClosestEnemy(); // Get a pointer to the closest enemy
 
-									   // turns into a percentage of the screen height
-	double toTheNearestFruit = (mBubCharacter->GetCentralPosition() - mClosestFruit->GetCentralPosition()).Length();
+	// Calculate the distance between the character to the top of the map as a percentage
+	double toTheNearestFruit = (mCharacter->GetCentralPosition() - mClosestFruit->GetCentralPosition()).Length();
 	toTheNearestFruit /= kRainbowIslandsScreenHeight;
 	toTheNearestFruit = 1 - toTheNearestFruit;
 
-	//go left
-	if (mClosestFruit->GetCentralPosition().x < mBubCharacter->GetCentralPosition().x)
-		inputs.push_back(1);
-	else
-		inputs.push_back(0);
-
-	//go right
-	if (mClosestFruit->GetCentralPosition().x > mBubCharacter->GetCentralPosition().x)
-		inputs.push_back(1);
-	else
-		inputs.push_back(0);
-
-	// turns into a percentage of the screen height
-	double toTheNearestEnemy = (mBubCharacter->GetCentralPosition() - mClosestEnemy->GetCentralPosition()).Length();
+	// Calculate distance to closest enemy as a percentage of the screen height
+	double toTheNearestEnemy = (mCharacter->GetCentralPosition() - mClosestEnemy->GetCentralPosition()).Length();
 	toTheNearestEnemy /= kRainbowIslandsScreenHeight;
+
+	// Decide if we need to go left
+	if (mClosestFruit->GetCentralPosition().x < mCharacter->GetCentralPosition().x)
+		inputs.push_back(1);
+	else
+		inputs.push_back(0);
+
+	// Decide if we need to go right
+	if (mClosestFruit->GetCentralPosition().x > mCharacter->GetCentralPosition().x)
+		inputs.push_back(1);
+	else
+		inputs.push_back(0);
 
 	//////////
 	/*
@@ -798,15 +799,15 @@ void GameScreen_RainbowIslands::NeuraliseTheNetworkOfNeural()
 	*/
 	//////////
 
-	inputs.push_back(1 - (mBubCharacter->GetCentralPosition().y / kRainbowIslandsScreenHeight));
+	inputs.push_back(1 - (mCharacter->GetCentralPosition().y / kRainbowIslandsScreenHeight));
 
 	inputs.push_back(toTheNearestFruit);
 	inputs.push_back(toTheNearestEnemy);
 
-	vector<double> surroundings = mBubCharacter->GetSurroundings(mClosestEnemy->GetCentralPosition(), mRainbows);
+	vector<double> surroundings = mCharacter->GetSurroundings(mClosestEnemy->GetCentralPosition(), mRainbows);
 	inputs.insert(inputs.end(), surroundings.begin(), surroundings.end());
 
-	inputs.push_back(mBubCharacter->OnARainbow());
+	inputs.push_back(mCharacter->OnARainbow());
 	vector<double> inputsBackup = inputs;
 
 	vector<double> output = mNeuralNetwork->Update(inputs);
@@ -883,7 +884,7 @@ void GameScreen_RainbowIslands::NeuraliseTheNetworkOfNeural()
 		RestartLevel();
 	}
 
-	if (mTimeToCompleteLevel <= 0 || mGenAlgUpdateTimer > mGenAlgUpdateTime)
+	if (mTimeToCompleteLevel <= 0 || mCurrGenUpdateTimer > kGenAlgUpdateTime)
 	{
 		//Back Prop
 		//mNeuralNetwork->NetworkTrainingEpoch(inputsBackup, output, mBubCharacter->GetPoints(), 410);
@@ -894,7 +895,7 @@ void GameScreen_RainbowIslands::NeuraliseTheNetworkOfNeural()
 
 CharacterFruit* GameScreen_RainbowIslands::FindClosestFruit()
 {
-	Vector2D charPos = mBubCharacter->GetCentralPosition();
+	Vector2D charPos = mCharacter->GetCentralPosition();
 	double closestFruitDist = MaxDouble;
 	double current = 0;
 	CharacterFruit* closestFruit;
@@ -917,7 +918,7 @@ CharacterFruit* GameScreen_RainbowIslands::FindClosestFruit()
 
 Character* GameScreen_RainbowIslands::FindClosestEnemy()
 {
-	Vector2D charPos = mBubCharacter->GetCentralPosition();
+	Vector2D charPos = mCharacter->GetCentralPosition();
 	double closestEnemyDist = MaxDouble;
 	double current = 0;
 	Character* closestEnemy;
@@ -940,9 +941,9 @@ void GameScreen_RainbowIslands::SaveWeightsToFile()
 	std::fstream fs;
 	fs.open("Weights.txt", std::fstream::in | std::fstream::out);
 
-	for (int i = 0; i < kPopSize; i++)
+	for (int i = 0; i < kPopulationLimit; i++)
 	{
-		for each (double vecOfWeights in m_vecSetOfWeights[i].vWeights)
+		for each (double vecOfWeights in mCurrGenGenomes[i].vWeights)
 		{
 			fs << vecOfWeights << endl;
 		}
@@ -956,9 +957,9 @@ bool GameScreen_RainbowIslands::ReadWeightsFromFile()
 	std::fstream fs;
 	fs.open("Weights.txt", std::fstream::in | std::fstream::out);
 
-	for (int i = 0; i < kPopSize; i++)
+	for (int i = 0; i < kPopulationLimit; i++)
 	{
-		m_vecSetOfWeights[i].vWeights;
+		mCurrGenGenomes[i].vWeights;
 		vector<double> loadedWeights;
 		for (size_t j = 0; j < mNeuralNetwork->GetNumberOfWeights(); j++)
 		{
@@ -966,7 +967,7 @@ bool GameScreen_RainbowIslands::ReadWeightsFromFile()
 			fs >> input;
 			loadedWeights.push_back(stod(input));
 		}
-		m_vecSetOfWeights[i].vWeights = loadedWeights;
+		mCurrGenGenomes[i].vWeights = loadedWeights;
 	}
 
 	fs.close();

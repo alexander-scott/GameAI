@@ -24,7 +24,6 @@ class CharacterRainbow;
 class CharacterChest;
 class LevelMap;
 
-
 class GameScreen_RainbowIslands : GameScreen
 {
 //--------------------------------------------------------------------------------------------------
@@ -57,7 +56,7 @@ private:
 	void TriggerChestSpawns();
 
 	Texture2D*				  mBackgroundTexture;
-	CharacterAI*			  mBubCharacter;
+	CharacterAI*			  mCharacter;
 	bool					  mCanSpawnRainbow;
 	vector<Character*>		  mEnemies;
 	vector<CharacterFruit*>	  mFruit;
@@ -72,32 +71,28 @@ private:
 
 //--------------------------------------------------------------------------------------------------
 private:
-	void NeuraliseTheNetworkOfNeural();
+	void					  UpdateNeuralNetwork();
 
-	CharacterFruit * FindClosestFruit();
-	Character * FindClosestEnemy();
+	CharacterFruit *		  FindClosestFruit();
+	Character *				  FindClosestEnemy();	
 
-	void SaveWeightsToFile();
-	bool ReadWeightsFromFile();
+	void					  SaveWeightsToFile();
+	bool					  ReadWeightsFromFile();
 
 	NeuralNetwork*			  mNeuralNetwork;
 	GeneticAlgorithm*		  mGeneticAlgorithm;
 
-	vector<Genome>	          m_vecSetOfWeights;
-	int						  mCurrentPopulationCount;
-	int						  mGenAlgUpdateTimer;
-	const int				  mGenAlgUpdateTime = 60000; //20 seconds
-														 //stores the average fitness per generation for use 
-														 //in graphing.
-	vector<double>			  mVecAvFitness;
-	
-	vector<double>			  mVecBestFitness; //stores the best fitness per generation
-	int						  mGenerationCount;
+	int						  mGenerationCount; // Count the number of generations that have occured
 
-	CharacterFruit*			 mClosestFruit;
-	Character*				 mClosestEnemy;
-	int						 mRainbowsFired;
+	vector<Genome>	          mCurrGenGenomes; // Stores the genomes/weights belonging to this generation
+	vector<double>			  mCurrGenAvgFitness; // Stores the average fitness per generation
+	vector<double>			  mCurrGenBestFitness; // Stores the best fitness per generation
+	int						  mCurrGenGenomeIndex; // The current genome of this generation
+	int						  mCurrGenUpdateTimer; // Timer that restarts level if the current generation has gone on for too long
+
+	CharacterFruit*			  mClosestFruit;
+	Character*				  mClosestEnemy;
+	int						  mRainbowsFired;
 };
-
 
 #endif //_GAMESCREEN_RAINBOW_H

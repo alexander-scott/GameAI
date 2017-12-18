@@ -55,20 +55,25 @@ const int kNumberOfHiddenLayers			 = 1; //
 const int kNumberOfNeuronsPerHiddenLayer = 3; // 
 
 //--------------------------------------------------------------------
+// Neural Network
 const int		kNumInputs = 41;
 const int		kNumOutputs = 4;
 const int		kNumHiddenLayers = 1;
 const int		kNeuronsPerHiddenLyr = 20;
 const double	kActivationResponse = 5.0; //for tweeking the sigmoid function
 const double	kBias = -1; //bias value
-const double	learningRate = 0.01;
+const double	kLearningRate = 0.01;
+const float		kPointMultiplier = 1;
+const float		kTimeMultiplier = 0.001f;
+const float		kHeightMultiplier = 1000;
 
-//GA
-const double	kPopSize = 10; //size of each pop before crossover
+// Genetic Algorithm
+const double	kPopulationLimit = 10; // The maximum population a generation can have before it mutates
 const double	kRainbowCrossoverRate = 0.7;
 const double	kRainbowMutationRate = 0.0;
 const double	kMaxPerturbation = 0.1; //the maximum amount the ga may mutate each weight by
 const int		kNumElite = 4; //used for elitism
-const int		kNumCopiesElite = 1;
+const int		kNumCopiesElite = 2;
+const int		kGenAlgUpdateTime = 18000; //60 seconds
 
 #endif //RAINBOW_CONSTANTS_H
