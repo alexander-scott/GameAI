@@ -135,6 +135,15 @@
     <ClInclude Include="RainbowIslands\VirtualJoypad.h">
       <Filter>RainbowIslands</Filter>
     </ClInclude>
+    <ClInclude Include="RainbowIslands\GeneticAlgorithm.h">
+      <Filter>RainbowIslands</Filter>
+    </ClInclude>
+    <ClInclude Include="RainbowIslands\NeuralNetwork.h">
+      <Filter>RainbowIslands</Filter>
+    </ClInclude>
+    <ClInclude Include="RainbowIslands\CharacterAI.h">
+      <Filter>RainbowIslands</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GameScreen.cpp">
@@ -216,6 +225,15 @@
       <Filter>RainbowIslands</Filter>
     </ClCompile>
     <ClCompile Include="RainbowIslands\VirtualJoypad.cpp">
+      <Filter>RainbowIslands</Filter>
+    </ClCompile>
+    <ClCompile Include="RainbowIslands\GeneticAlgorithm.cpp">
+      <Filter>RainbowIslands</Filter>
+    </ClCompile>
+    <ClCompile Include="RainbowIslands\NeuralNetwork.cpp">
+      <Filter>RainbowIslands</Filter>
+    </ClCompile>
+    <ClCompile Include="RainbowIslands\CharacterAI.cpp">
       <Filter>RainbowIslands</Filter>
     </ClCompile>
   </ItemGroup>

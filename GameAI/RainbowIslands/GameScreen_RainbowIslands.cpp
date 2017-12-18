@@ -6,7 +6,7 @@
 #include <iostream>
 #include "LevelMap.h"
 #include "Character.h"
-#include "CharacterBub.h"
+#include "CharacterAI.h"
 #include "CharacterCaterpillar.h"
 #include "CharacterRainbow.h"
 #include "CharacterFruit.h"
@@ -16,6 +16,9 @@
 #include "../Texture2D.h"
 #include "../Collisions.h"
 #include "VirtualJoypad.h"
+
+#include <fstream>
+
 using namespace::std;
 
 int RainbowOffsets[] = { 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,22,22,23,23,
@@ -27,6 +30,30 @@ GameScreen_RainbowIslands::GameScreen_RainbowIslands(SDL_Renderer* renderer) : G
 	srand(NULL);
 	mLevelMap = NULL;
 	SetUpLevel();
+
+	mNeuralNetwork = new NeuralNetwork();
+	mGenAlgUpdateTimer = 0;
+	mCurrentPopulationCount = 0;
+	mGenerationCount = 0;
+	mRainbowsFired = 0;
+
+	//get the total number of weights used in the sweepers
+	//NN so we can initialise the GA
+	int m_NumWeightsInNN = mNeuralNetwork->GetNumberOfWeights();
+
+	//initialize the Genetic Algorithm class
+	mGeneticAlgorithm = new GeneticAlgorithm(kPopSize, kRainbowMutationRate, kRainbowCrossoverRate, m_NumWeightsInNN);
+
+	//Get the weights from the GA and insert into Bub's brains
+	m_vecSetOfWeights = mGeneticAlgorithm->GetChromos();
+	mNeuralNetwork->PutWeights(mGeneticAlgorithm->GetChromos()[mCurrentPopulationCount].vWeights);
+	
+	cout << "Current Weight Set: " << mCurrentPopulationCount << endl;
+
+	if (!ReadWeightsFromFile()) {
+		cout << "ERROR OCCURED LOADING WEIGHTS" << endl;
+		mNeuralNetwork->PutWeights(m_vecSetOfWeights[mCurrentPopulationCount].vWeights);
+	}
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -57,6 +84,12 @@ GameScreen_RainbowIslands::~GameScreen_RainbowIslands()
 
 	//Rainbows.
 	mRainbows.clear();
+
+	//Neural Network
+	delete mNeuralNetwork;
+
+	//Genetic Algorithm
+	delete mGeneticAlgorithm;
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -127,6 +160,13 @@ void GameScreen_RainbowIslands::RenderBackground()
 
 void GameScreen_RainbowIslands::Update(size_t deltaTime, SDL_Event e)
 {
+	mGenAlgUpdateTimer += deltaTime;
+
+	//--------------------------------------------------------------------------------------------------
+	//Update the Neural network.
+	//--------------------------------------------------------------------------------------------------
+	NeuraliseTheNetworkOfNeural();
+
 	//--------------------------------------------------------------------------------------------------
 	//Update the Virtual Joypad.
 	//--------------------------------------------------------------------------------------------------
@@ -139,8 +179,6 @@ void GameScreen_RainbowIslands::Update(size_t deltaTime, SDL_Event e)
 	if (mTimeToCompleteLevel < TRIGGER_ANGRY_TIME && !mTriggeredAnger)
 	{
 		MakeEnemiesAngry();
-		if (mTimeToCompleteLevel <= 0)
-			RestartLevel();
 	}
 
 	//--------------------------------------------------------------------------------------------------
@@ -399,6 +437,53 @@ bool GameScreen_RainbowIslands::SetUpLevel()
 
 void GameScreen_RainbowIslands::RestartLevel()
 {
+	//TRAIN NN
+	float pointMult = 1, timeMult = 0.001, heightMult = 1000;
+	float points = mBubCharacter->GetPoints() * pointMult;
+	float time = mGenAlgUpdateTimer * timeMult;
+	float height = min((1 - (mBubCharacter->GetCentralPosition().y / kRainbowIslandsScreenHeight)) * heightMult, 1000);
+	m_vecSetOfWeights[mCurrentPopulationCount].dFitness = points + time + height - mRainbowsFired;
+	cout << "Score : " << m_vecSetOfWeights[mCurrentPopulationCount].dFitness << endl;
+
+	mCurrentPopulationCount++;
+	mGenAlgUpdateTimer = 0;
+	mRainbowsFired = 0;
+
+	//BACK PROPOGATION
+	if (mCurrentPopulationCount == (int)kPopSize)
+	{
+		mGenerationCount++;
+
+		cout << kPopSize << " Sets of Chromosomes have been created. Selection/Crossover/Mutation begins." << endl;
+		cout << "Current Generation : " << mGenerationCount << endl;
+
+		mCurrentPopulationCount = 0;
+
+		m_vecSetOfWeights = mGeneticAlgorithm->Epoch(m_vecSetOfWeights);
+
+		mNeuralNetwork->PutWeights(mGeneticAlgorithm->GetChromos()[mCurrentPopulationCount].vWeights);
+
+		//update the stats to be used in our stat window -- CAN BE REMOVED
+		mVecAvFitness.push_back(mGeneticAlgorithm->AverageFitness());
+		mVecBestFitness.push_back(mGeneticAlgorithm->BestFitness());
+
+		//incr the gens
+
+		//reset cycles
+
+		//run the GA to create a new population
+
+		//insert the new (hopefully)improved brains back into the sweepers
+		//and reset their positions etc
+
+		//save to file
+		SaveWeightsToFile();
+	}
+
+	mNeuralNetwork->PutWeights(m_vecSetOfWeights[mCurrentPopulationCount].vWeights);
+
+	cout << "Current Weight Set: " << mCurrentPopulationCount << endl;
+
 	//Clean up current characters.
 	//Player character.
 	delete mBubCharacter;
@@ -432,6 +517,9 @@ void GameScreen_RainbowIslands::RestartLevel()
 
 	mTimeToCompleteLevel = LEVEL_TIME;
 	mTriggeredAnger		 = false;
+
+	mClosestFruit = nullptr;
+	mClosestEnemy = nullptr;
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -439,7 +527,7 @@ void GameScreen_RainbowIslands::RestartLevel()
 void GameScreen_RainbowIslands::CreateStartingCharacters()
 {
 	//Set up the player character.
-	mBubCharacter = new CharacterBub(mRenderer, "Images/RainbowIslands/bub.png", mLevelMap, Vector2D(100, 570));
+	mBubCharacter = new CharacterAI(mRenderer, "Images/RainbowIslands/bub.png", mLevelMap, Vector2D(100, 570));
 	mCanSpawnRainbow = true;
 
 	//Set up the bad guys.
@@ -587,6 +675,7 @@ void GameScreen_RainbowIslands::CreateCaterpillar(Vector2D position, FACING dire
 
 void GameScreen_RainbowIslands::CreateRainbow(Vector2D position, int numberOfRainbows)
 {
+	mRainbowsFired++;
 	double xOffset   = 0.0;
 	float  spwnDelay = 0.0f;
 	do
@@ -655,3 +744,231 @@ void GameScreen_RainbowIslands::TriggerChestSpawns()
 }
 
 //--------------------------------------------------------------------------------------------------
+
+void GameScreen_RainbowIslands::NeuraliseTheNetworkOfNeural()
+{
+	/*
+	genrations++;
+	reset tickTimer;
+	Run GA->Epoch(theData)
+
+	for each
+	put weights
+	reset
+	*/
+	vector<double> inputs;
+
+	mClosestFruit = FindClosestFruit(); //pointer
+	mClosestEnemy = FindClosestEnemy(); //pointer
+
+									   // turns into a percentage of the screen height
+	double toTheNearestFruit = (mBubCharacter->GetCentralPosition() - mClosestFruit->GetCentralPosition()).Length();
+	toTheNearestFruit /= kRainbowIslandsScreenHeight;
+	toTheNearestFruit = 1 - toTheNearestFruit;
+
+	//go left
+	if (mClosestFruit->GetCentralPosition().x < mBubCharacter->GetCentralPosition().x)
+		inputs.push_back(1);
+	else
+		inputs.push_back(0);
+
+	//go right
+	if (mClosestFruit->GetCentralPosition().x > mBubCharacter->GetCentralPosition().x)
+		inputs.push_back(1);
+	else
+		inputs.push_back(0);
+
+	// turns into a percentage of the screen height
+	double toTheNearestEnemy = (mBubCharacter->GetCentralPosition() - mClosestEnemy->GetCentralPosition()).Length();
+	toTheNearestEnemy /= kRainbowIslandsScreenHeight;
+
+	//////////
+	/*
+	Inputs
+
+	Left?
+	Right?
+	Distance from the top
+	Distance to the nearest fruit
+	Distance to the nearest enemy
+	Surrounding tiles (5*7=35)
+	onRainbow
+
+	= 41
+	*/
+	//////////
+
+	inputs.push_back(1 - (mBubCharacter->GetCentralPosition().y / kRainbowIslandsScreenHeight));
+
+	inputs.push_back(toTheNearestFruit);
+	inputs.push_back(toTheNearestEnemy);
+
+	vector<double> surroundings = mBubCharacter->GetSurroundings(mClosestEnemy->GetCentralPosition(), mRainbows);
+	inputs.insert(inputs.end(), surroundings.begin(), surroundings.end());
+
+	inputs.push_back(mBubCharacter->OnARainbow());
+	vector<double> inputsBackup = inputs;
+
+	vector<double> output = mNeuralNetwork->Update(inputs);
+
+	//////////
+	/*
+	Fitness
+	1. Score
+
+	Back Propogation
+	1. Error = Max Score - Score
+	2. Use the formula
+	*/
+	//////////
+
+
+	///////////
+	// Debug //
+	///////////
+	/*
+	system("cls");
+	cout << "Current Weight Set: " << currentPopulationCount << endl;
+	for each (double var in m_vecSetOfWeights[currentPopulationCount].vWeights)
+	{
+	cout << var << " | ";
+	}
+	cout << endl;
+	*/
+
+	//////////
+	/*
+	Flow
+
+	1.Run the game for 60 seconds using the neural network for t seconds,
+	2.Run this x times, altering the weights with back propgation after each run
+	3.After x times, run the GA using the fitness alg to select, crossover and mutate the x sets of weights, and create x new weights
+	4.Rinse and repeat, lowering the mutatation value as usual with GAs
+	*/
+	//////////
+
+	if (output.size() < kNumOutputs)
+	{
+		cout << "Error: Incorrect number of outputs" << endl;
+	}
+
+	if (output[0] > 0.80)
+		VirtualJoypad::Instance()->LeftArrow = true;
+	else
+		VirtualJoypad::Instance()->LeftArrow = false;
+	if (output[1] > 0.85)
+		VirtualJoypad::Instance()->DownArrow = true;
+	else
+		VirtualJoypad::Instance()->DownArrow = false;
+	if (output[2] > 0.80)
+		VirtualJoypad::Instance()->RightArrow = true;
+	else
+		VirtualJoypad::Instance()->RightArrow = false;
+	if (output[3] > 0.80)
+		VirtualJoypad::Instance()->UpArrow = true;
+	else
+		VirtualJoypad::Instance()->UpArrow = false;
+
+
+	//cout << "UP:" << VirtualJoypad::Instance()->UpArrow << endl;
+	//cout << "DOWN:" << VirtualJoypad::Instance()->DownArrow << endl;
+	//cout << "LEFT:" << VirtualJoypad::Instance()->LeftArrow << endl;
+	//cout << "RIGHT:" << VirtualJoypad::Instance()->RightArrow << endl;
+
+
+	if (VirtualJoypad::Instance()->ForceRestartLevel == true)
+	{
+		VirtualJoypad::Instance()->ForceRestartLevel = false;
+		//mNeuralNetwork->NetworkTrainingEpoch(inputsBackup, output, mBubCharacter->GetPoints(), 410);
+		RestartLevel();
+	}
+
+	if (mTimeToCompleteLevel <= 0 || mGenAlgUpdateTimer > mGenAlgUpdateTime)
+	{
+		//Back Prop
+		//mNeuralNetwork->NetworkTrainingEpoch(inputsBackup, output, mBubCharacter->GetPoints(), 410);
+		RestartLevel();
+	}
+
+}
+
+CharacterFruit* GameScreen_RainbowIslands::FindClosestFruit()
+{
+	Vector2D charPos = mBubCharacter->GetCentralPosition();
+	double closestFruitDist = MaxDouble;
+	double current = 0;
+	CharacterFruit* closestFruit;
+
+	for each (CharacterFruit* var in mFruit)
+	{
+		//if (var->GetCentralPosition().y < mBubCharacter->GetCentralPosition().y + kTileSpriteSheetHeight)
+		{
+			current = Vec2DDistance(var->GetCentralPosition(), charPos);
+			if (current < closestFruitDist)
+			{
+				closestFruitDist = current;
+				closestFruit = var;
+			}
+		}
+	}
+
+	return closestFruit;
+}
+
+Character* GameScreen_RainbowIslands::FindClosestEnemy()
+{
+	Vector2D charPos = mBubCharacter->GetCentralPosition();
+	double closestEnemyDist = MaxDouble;
+	double current = 0;
+	Character* closestEnemy;
+
+	for each (Character* var in mEnemies)
+	{
+		current = Vec2DDistance(var->GetCentralPosition(), charPos);
+		if (current < closestEnemyDist)
+		{
+			closestEnemyDist = current;
+			closestEnemy = var;
+		}
+	}
+
+	return closestEnemy;
+}
+
+void GameScreen_RainbowIslands::SaveWeightsToFile()
+{
+	std::fstream fs;
+	fs.open("Weights.txt", std::fstream::in | std::fstream::out);
+
+	for (int i = 0; i < kPopSize; i++)
+	{
+		for each (double vecOfWeights in m_vecSetOfWeights[i].vWeights)
+		{
+			fs << vecOfWeights << endl;
+		}
+	}
+
+	fs.close();
+}
+
+bool GameScreen_RainbowIslands::ReadWeightsFromFile()
+{
+	std::fstream fs;
+	fs.open("Weights.txt", std::fstream::in | std::fstream::out);
+
+	for (int i = 0; i < kPopSize; i++)
+	{
+		m_vecSetOfWeights[i].vWeights;
+		vector<double> loadedWeights;
+		for (size_t j = 0; j < mNeuralNetwork->GetNumberOfWeights(); j++)
+		{
+			string input;
+			fs >> input;
+			loadedWeights.push_back(stod(input));
+		}
+		m_vecSetOfWeights[i].vWeights = loadedWeights;
+	}
+
+	fs.close();
+	return true;
+}

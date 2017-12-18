@@ -32,6 +32,7 @@ public:
 	bool RightArrow;
 	bool UpArrow;
 	bool DownArrow;
+	bool ForceRestartLevel;
 };
 
 //--------------------------------------------------------------------------------------------------

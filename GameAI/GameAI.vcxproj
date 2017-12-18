@@ -87,6 +87,7 @@
     <ClInclude Include="Lunar\LunarConstants.h" />
     <ClInclude Include="Lunar\LunarLander.h" />
     <ClInclude Include="RainbowIslands\Character.h" />
+    <ClInclude Include="RainbowIslands\CharacterAI.h" />
     <ClInclude Include="RainbowIslands\CharacterBub.h" />
     <ClInclude Include="RainbowIslands\CharacterCaterpillar.h" />
     <ClInclude Include="RainbowIslands\CharacterChest.h" />
@@ -95,7 +96,9 @@
     <ClInclude Include="RainbowIslands\Commons_RainbowIslands.h" />
     <ClInclude Include="RainbowIslands\Constants_RainbowIslands.h" />
     <ClInclude Include="RainbowIslands\GameScreen_RainbowIslands.h" />
+    <ClInclude Include="RainbowIslands\GeneticAlgorithm.h" />
     <ClInclude Include="RainbowIslands\LevelMap.h" />
+    <ClInclude Include="RainbowIslands\NeuralNetwork.h" />
     <ClInclude Include="RainbowIslands\VirtualJoypad.h" />
     <ClInclude Include="Texture2D.h" />
     <ClInclude Include="TinyXML\tinystr.h" />
@@ -115,13 +118,16 @@
     <ClCompile Include="Lunar\GameScreen_Lunar.cpp" />
     <ClCompile Include="Lunar\LunarLander.cpp" />
     <ClCompile Include="RainbowIslands\Character.cpp" />
+    <ClCompile Include="RainbowIslands\CharacterAI.cpp" />
     <ClCompile Include="RainbowIslands\CharacterBub.cpp" />
     <ClCompile Include="RainbowIslands\CharacterCaterpillar.cpp" />
     <ClCompile Include="RainbowIslands\CharacterChest.cpp" />
     <ClCompile Include="RainbowIslands\CharacterFruit.cpp" />
     <ClCompile Include="RainbowIslands\CharacterRainbow.cpp" />
     <ClCompile Include="RainbowIslands\GameScreen_RainbowIslands.cpp" />
+    <ClCompile Include="RainbowIslands\GeneticAlgorithm.cpp" />
     <ClCompile Include="RainbowIslands\LevelMap.cpp" />
+    <ClCompile Include="RainbowIslands\NeuralNetwork.cpp" />
     <ClCompile Include="RainbowIslands\VirtualJoypad.cpp" />
     <ClCompile Include="Source.cpp" />
     <ClCompile Include="Texture2D.cpp" />

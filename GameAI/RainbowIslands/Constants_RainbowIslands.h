@@ -54,4 +54,21 @@ const int kNumberOfOutputs				 = 4; // Controls on joypad.
 const int kNumberOfHiddenLayers			 = 1; // 
 const int kNumberOfNeuronsPerHiddenLayer = 3; // 
 
+//--------------------------------------------------------------------
+const int		kNumInputs = 41;
+const int		kNumOutputs = 4;
+const int		kNumHiddenLayers = 1;
+const int		kNeuronsPerHiddenLyr = 20;
+const double	kActivationResponse = 5.0; //for tweeking the sigmoid function
+const double	kBias = -1; //bias value
+const double	learningRate = 0.01;
+
+//GA
+const double	kPopSize = 10; //size of each pop before crossover
+const double	kRainbowCrossoverRate = 0.7;
+const double	kRainbowMutationRate = 0.0;
+const double	kMaxPerturbation = 0.1; //the maximum amount the ga may mutate each weight by
+const int		kNumElite = 4; //used for elitism
+const int		kNumCopiesElite = 1;
+
 #endif //RAINBOW_CONSTANTS_H
