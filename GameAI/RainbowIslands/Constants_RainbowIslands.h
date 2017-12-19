@@ -70,10 +70,10 @@ const float		kHeightMultiplier = 1000;
 // Genetic Algorithm
 const double	kPopulationLimit = 10; // The maximum population a generation can have before it mutates
 const double	kRainbowCrossoverRate = 0.7;
-const double	kRainbowMutationRate = 0.0;
-const double	kMaxPerturbation = 0.1; //the maximum amount the ga may mutate each weight by
+const double	kRainbowMutationRate = 0.1;
+const double	kMaxPerturbation = 0.3; //the maximum amount the ga may mutate each weight by
 const int		kNumElite = 4; //used for elitism
-const int		kNumCopiesElite = 2;
-const int		kGenAlgUpdateTime = 18000; //60 seconds
+const int		kNumCopiesElite = 1;
+const int		kGenAlgUpdateTime = 72000; //60 seconds
 
 #endif //RAINBOW_CONSTANTS_H

@@ -46,7 +46,7 @@ GameScreen_RainbowIslands::GameScreen_RainbowIslands(SDL_Renderer* renderer) : G
 
 	//Get the weights from the GA and insert into Bub's brains
 	mCurrGenGenomes = mGeneticAlgorithm->GetChromos();
-	mNeuralNetwork->PutWeights(mGeneticAlgorithm->GetChromos()[mCurrGenGenomeIndex].vWeights);
+	mNeuralNetwork->PutWeights(mCurrGenGenomes[mCurrGenGenomeIndex].vWeights);
 	
 	cout << "Current Weight Set: " << mCurrGenGenomeIndex << endl;
 
@@ -762,7 +762,7 @@ void GameScreen_RainbowIslands::UpdateNeuralNetwork()
 	mClosestFruit = FindClosestFruit(); // Get a pointer to the closest fruit
 	mClosestEnemy = FindClosestEnemy(); // Get a pointer to the closest enemy
 
-	// Calculate the distance between the character to the top of the map as a percentage
+	// Calculate distance to closest fruit as a percentage of the screen height
 	double toTheNearestFruit = (mCharacter->GetCentralPosition() - mClosestFruit->GetCentralPosition()).Length();
 	toTheNearestFruit /= kRainbowIslandsScreenHeight;
 	toTheNearestFruit = 1 - toTheNearestFruit;
@@ -770,6 +770,7 @@ void GameScreen_RainbowIslands::UpdateNeuralNetwork()
 	// Calculate distance to closest enemy as a percentage of the screen height
 	double toTheNearestEnemy = (mCharacter->GetCentralPosition() - mClosestEnemy->GetCentralPosition()).Length();
 	toTheNearestEnemy /= kRainbowIslandsScreenHeight;
+	toTheNearestEnemy = 1 - toTheNearestEnemy;
 
 	// Decide if we need to go left
 	if (mClosestFruit->GetCentralPosition().x < mCharacter->GetCentralPosition().x)

@@ -4,7 +4,7 @@ std::random_device dseeder;
 std::mt19937 GArng(dseeder());
 std::uniform_real_distribution<double> genDub(0, 1); //(min, max)
 
-GeneticAlgorithm::GeneticAlgorithm(int popsize, double MutRat, double CrossRat, int numweights) : m_iPopSize(popsize), m_dMutationRate(MutRat), m_dCrossoverRate(CrossRat)
+GeneticAlgorithm::GeneticAlgorithm(int popsize, double MutRat, double CrossRat, int numWeights) : m_iPopSize(popsize), m_dMutationRate(MutRat), m_dCrossoverRate(CrossRat)
 {
 	m_dTotalFitness = 0;
 	m_cGeneration = 0;
@@ -19,13 +19,13 @@ GeneticAlgorithm::GeneticAlgorithm(int popsize, double MutRat, double CrossRat, 
 	{
 		m_vecPop.push_back(Genome());
 
-		for (int j = 0; j < numweights; ++j)
+		for (int j = 0; j < numWeights; ++j)
 		{
 			m_vecPop[i].vWeights.push_back(genDub(GArng));
 		}
 	}
 
-	m_iChromoLength = numweights;
+	m_iChromoLength = numWeights;
 }
 
 GeneticAlgorithm::~GeneticAlgorithm()
