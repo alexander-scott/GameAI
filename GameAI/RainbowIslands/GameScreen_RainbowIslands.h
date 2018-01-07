@@ -11,20 +11,18 @@
 #include <SDL.h>
 #include <vector>
 
-#include "CCharacter.h"
-#include "CGenAlg.h"
-#include "utils.h"
+#include "NeuralNetwork.h"
+#include "GeneticAlgorithm.h"
 
 using namespace::std;
 
 class Texture2D;
 class Character;
-class CharacterBub;
+class CharacterAI;
 class CharacterFruit;
 class CharacterRainbow;
 class CharacterChest;
 class LevelMap;
-
 
 class GameScreen_RainbowIslands : GameScreen
 {
@@ -38,25 +36,18 @@ public:
 	void RenderBackground();
 	void Update(size_t deltaTime, SDL_Event e);
 
-	void UpdateCharacter(size_t deltaTime, SDL_Event e);
-	void UpdateCharacterNN(size_t deltaTime, SDL_Event e);
-
 //--------------------------------------------------------------------------------------------------
 private:
 	void SetLevelMap();
 	void RestartLevel();
-
 	void CreateStartingCharacters();
-	void CreateStartingCharactersNN();
 
 	void MakeEnemiesAngry();
 	void UpdateEnemies(size_t deltaTime, SDL_Event e);
 	void CreateCaterpillar(Vector2D position, FACING direction);
 
 	void UpdateRainbows(size_t deltaTime, SDL_Event e);
-	void UpdateRainbowsNN(size_t deltaTime, SDL_Event e);
 	void CreateRainbow(Vector2D position, int numberOfRainbows);
-	void CreateRainbow(Vector2D position, int numberOfRainbows, CCharacter* character);
 
 	void UpdateFruit(size_t deltaTime, SDL_Event e);
 	void CreateFruit(Vector2D position, bool bounce);
@@ -64,10 +55,8 @@ private:
 	void CreateChest(Vector2D position);
 	void TriggerChestSpawns();
 
-//--------------------------------------------------------------------------------------------------
-private:
 	Texture2D*				  mBackgroundTexture;
-	CharacterBub*			  mBubCharacter;
+	CharacterAI*			  mCharacter;
 	bool					  mCanSpawnRainbow;
 	vector<Character*>		  mEnemies;
 	vector<CharacterFruit*>	  mFruit;
@@ -80,28 +69,30 @@ private:
 
 	bool					  mTriggeredChestSpawns;
 
-	//storage for the population of genomes
-	vector<SGenome>			m_vecThePopulation;
+//--------------------------------------------------------------------------------------------------
+private:
+	void					  UpdateNeuralNetwork();
 
-	//and the character
-	vector<CCharacter*>		m_vecCharacters;
+	CharacterFruit *		  FindClosestFruit();
+	Character *				  FindClosestEnemy();	
 
-	//pointer to the GA
-	CGenAlg*		         m_pGA;
+	void					  SaveWeightsToFile();
+	bool					  ReadWeightsFromFile();
 
-	//stores the average fitness per generation for use 
-	//in graphing.
-	vector<double>		   m_vecAvFitness;
+	NeuralNetwork*			  mNeuralNetwork;
+	GeneticAlgorithm*		  mGeneticAlgorithm;
 
-	//stores the best fitness per generation
-	vector<double>		   m_vecBestFitness;
+	int						  mGenerationCount; // Count the number of generations that have occured
 
-	//cycles per generation
-	int					m_iTicks;
+	vector<Genome>	          mCurrGenGenomes; // Stores the genomes/weights belonging to this generation
+	vector<double>			  mCurrGenAvgFitness; // Stores the average fitness per generation
+	vector<double>			  mCurrGenBestFitness; // Stores the best fitness per generation
+	int						  mCurrGenGenomeIndex; // The current genome of this generation
+	int						  mCurrGenUpdateTimer; // Timer that restarts level if the current generation has gone on for too long
 
-	//generation counter
-	int					m_iGenerations;
+	CharacterFruit*			  mClosestFruit;
+	Character*				  mClosestEnemy;
+	int						  mRainbowsFired;
 };
-
 
 #endif //_GAMESCREEN_RAINBOW_H

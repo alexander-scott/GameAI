@@ -37,7 +37,7 @@ public:
 	int	GetRainbowsAllowed();
 
 //--------------------------------------------------------------------------------------------------
-protected:
+private:
 	int		mStartFrame;
 	int		mEndFrame;
 	int		mCurrentFrame;

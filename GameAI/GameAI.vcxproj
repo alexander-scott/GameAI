@@ -20,7 +20,7 @@
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v140_xp</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -86,20 +86,19 @@
     <ClInclude Include="Lunar\GameScreen_Lunar.h" />
     <ClInclude Include="Lunar\LunarConstants.h" />
     <ClInclude Include="Lunar\LunarLander.h" />
-    <ClInclude Include="RainbowIslands\CGenAlg.h" />
     <ClInclude Include="RainbowIslands\Character.h" />
+    <ClInclude Include="RainbowIslands\CharacterAI.h" />
     <ClInclude Include="RainbowIslands\CharacterBub.h" />
     <ClInclude Include="RainbowIslands\CharacterCaterpillar.h" />
     <ClInclude Include="RainbowIslands\CharacterChest.h" />
     <ClInclude Include="RainbowIslands\CharacterFruit.h" />
     <ClInclude Include="RainbowIslands\CharacterRainbow.h" />
-    <ClInclude Include="RainbowIslands\CCharacter.h" />
-    <ClInclude Include="RainbowIslands\CNeuralNet.h" />
     <ClInclude Include="RainbowIslands\Commons_RainbowIslands.h" />
     <ClInclude Include="RainbowIslands\Constants_RainbowIslands.h" />
     <ClInclude Include="RainbowIslands\GameScreen_RainbowIslands.h" />
+    <ClInclude Include="RainbowIslands\GeneticAlgorithm.h" />
     <ClInclude Include="RainbowIslands\LevelMap.h" />
-    <ClInclude Include="RainbowIslands\utils.h" />
+    <ClInclude Include="RainbowIslands\NeuralNetwork.h" />
     <ClInclude Include="RainbowIslands\VirtualJoypad.h" />
     <ClInclude Include="Texture2D.h" />
     <ClInclude Include="TinyXML\tinystr.h" />
@@ -118,18 +117,17 @@
     <ClCompile Include="GameScreenManager.cpp" />
     <ClCompile Include="Lunar\GameScreen_Lunar.cpp" />
     <ClCompile Include="Lunar\LunarLander.cpp" />
-    <ClCompile Include="RainbowIslands\CGenAlg.cpp" />
     <ClCompile Include="RainbowIslands\Character.cpp" />
+    <ClCompile Include="RainbowIslands\CharacterAI.cpp" />
     <ClCompile Include="RainbowIslands\CharacterBub.cpp" />
     <ClCompile Include="RainbowIslands\CharacterCaterpillar.cpp" />
     <ClCompile Include="RainbowIslands\CharacterChest.cpp" />
     <ClCompile Include="RainbowIslands\CharacterFruit.cpp" />
     <ClCompile Include="RainbowIslands\CharacterRainbow.cpp" />
-    <ClCompile Include="RainbowIslands\CCharacter.cpp" />
-    <ClCompile Include="RainbowIslands\CNeuralNet.cpp" />
     <ClCompile Include="RainbowIslands\GameScreen_RainbowIslands.cpp" />
+    <ClCompile Include="RainbowIslands\GeneticAlgorithm.cpp" />
     <ClCompile Include="RainbowIslands\LevelMap.cpp" />
-    <ClCompile Include="RainbowIslands\utils.cpp" />
+    <ClCompile Include="RainbowIslands\NeuralNetwork.cpp" />
     <ClCompile Include="RainbowIslands\VirtualJoypad.cpp" />
     <ClCompile Include="Source.cpp" />
     <ClCompile Include="Texture2D.cpp" />

@@ -55,25 +55,25 @@ const int kNumberOfHiddenLayers			 = 1; //
 const int kNumberOfNeuronsPerHiddenLayer = 3; // 
 
 //--------------------------------------------------------------------
-// NEW STUFF
-const bool USE_NEURAL_NETWORK = true;
+// Neural Network
+const int		kNumInputs = 41;
+const int		kNumOutputs = 4;
+const int		kNumHiddenLayers = 1;
+const int		kNeuronsPerHiddenLyr = 20;
+const double	kActivationResponse = 5.0; //for tweeking the sigmoid function
+const double	kBias = -1; //bias value
+const double	kLearningRate = 0.01;
+const float		kPointMultiplier = 1;
+const float		kTimeMultiplier = 0.001f;
+const float		kHeightMultiplier = 1000;
 
-const int kNumInputs = 4;
-const int kNumOutputs = 4;
-const int kNumHidden = 1;
-const int kNeuronsPerHiddenLayer = 6;
-
-const float kMaxPerturbation = 0.3f;
-const int kNumElite = 1;
-const int kNumCopiesElite = 1;
-
-const int kBias = -1;
-const int kActivationResponse = 1;
-
-const int kNumOfCharacters = 1;
-const int kNumTicks = 200;
-
-const double kMutationRateNN = 0.1;
-const double kCrossoverRateNN = 0.7;
+// Genetic Algorithm
+const double	kPopulationLimit = 10; // The maximum population a generation can have before it mutates
+const double	kRainbowCrossoverRate = 0.7;
+const double	kRainbowMutationRate = 0.1;
+const double	kMaxPerturbation = 0.3; //the maximum amount the ga may mutate each weight by
+const int		kNumElite = 4; //used for elitism
+const int		kNumCopiesElite = 1;
+const int		kGenAlgUpdateTime = 108000; //90 seconds
 
 #endif //RAINBOW_CONSTANTS_H

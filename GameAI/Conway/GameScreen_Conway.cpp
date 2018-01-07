@@ -204,18 +204,15 @@ void GameScreen_Conway::DetermineState()
 {
 	int totalTiles = (kConwayScreenWidth / kConwayTileDimensions);
 
-	
 	// Create and initalise the array of tiles
 	int ** mapTwo;
 	mapTwo = new int*[totalTiles + 1]; 
-
 
 	// Create and initalise a child array for each tile
 	for (int i = 0; i < totalTiles + 1; i++)
 	{
 		mapTwo[i] = new int[totalTiles + 1];
 	}
-
 
 	// For each tile in mapTwo
 	for (int a = 0; a < totalTiles; a++)
@@ -228,23 +225,22 @@ void GameScreen_Conway::DetermineState()
 		}
 	}
 
-
 	// For each tile in mapTwo
-	for (int a = 1; a < totalTiles; a++)
+	for (int iWidth = 1; iWidth < totalTiles; iWidth++)
 	{
-		// For each value in the child array of tile 'a'
-		for (int b = 1; b < totalTiles; b++)
+		// For each value in the child array of tile 'iWidth'
+		for (int iHeight = 1; iHeight < totalTiles; iHeight++)
 		{
 			int surroundingAliveTiles = 0;
 
-			// These two loops go through the 9 tiles surrounding [a][b] (including the current tile itself)
-			for (int c = -1; c < 2; c++)
+			// These two loops go through the 9 tiles surrounding [iWidth][iHeight] (including the current tile itself)
+			for (int iWidthOffset = -1; iWidthOffset < 2; iWidthOffset++)
 			{
-				for (int d = -1; d < 2; d++)
+				for (int iHeightOffset = -1; iHeightOffset < 2; iHeightOffset++)
 				{
-					if (!(c == 0 && d == 0)) // C == 0 and D == 0 is the current tile ([a][b]) so ignore this one
+					if (!(iWidthOffset == 0 && iHeightOffset == 0)) // iWidthOffset == 0 and iHeightOffset == 0 is the current tile ([iWidth][iHeight]) so ignore this one
 					{
-						if (mapTwo[a + c][b + d]) // If the tile that we are currently at is alive
+						if (mapTwo[iWidth + iWidthOffset][iHeight + iHeightOffset]) // If the tile that we are currently at is alive
 						{
 							++surroundingAliveTiles; // Increment alive surrounding tiles
 						}
@@ -252,21 +248,28 @@ void GameScreen_Conway::DetermineState()
 				}
 			}
 
-			if (surroundingAliveTiles < 2) // 1 or 0 surrounding alive tiles = [a][b] is now dead
+			// If the centre cell is alive
+			if (mMap[iWidth][iHeight])
 			{
-				mMap[a][b] = 0;
-			}
-			else if (surroundingAliveTiles == 3) // Exactly 3 surrounding alive tiles = [a][b] is now alive
-			{
-				mMap[a][b] = 1;
-			}
-			else if (surroundingAliveTiles > 3) // More than 3 surrounding alive tiles = [a][b] is now dead
-			{
-				mMap[a][b] = 0;
-			}
-			else // 2 surrounding alive tiles = [a][b] doesn't change
-			{
+				if (surroundingAliveTiles < 2) // 1 or 0 surrounding alive tiles = [iWidth][iHeight] is now dead
+				{
+					mMap[iWidth][iHeight] = 0;
+				}
+				else if (surroundingAliveTiles > 3) // More than 3 surrounding alive tiles = [iWidth][iHeight] is now dead
+				{
+					mMap[iWidth][iHeight] = 0;
+				}
+				else // Exactly 2 or 3 surroundingAliveTiles = [iWidth][iHeight] STAYS alive
+				{
 
+				}
+			}
+			else // If the centre cell is dead
+			{
+				if (surroundingAliveTiles == 3) // Exactly 3 surrounding alive times = [iWidth][iHeight] is now alive
+				{
+					mMap[iWidth][iHeight] = 1;
+				}
 			}
 		}
 	}
