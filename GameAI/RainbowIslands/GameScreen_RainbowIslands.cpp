@@ -770,7 +770,7 @@ void GameScreen_RainbowIslands::UpdateNeuralNetwork()
 	// Calculate distance to closest enemy as a percentage of the screen height
 	double toTheNearestEnemy = (mCharacter->GetCentralPosition() - mClosestEnemy->GetCentralPosition()).Length();
 	toTheNearestEnemy /= kRainbowIslandsScreenHeight;
-	toTheNearestEnemy = 1 - toTheNearestEnemy;
+	//toTheNearestEnemy = 1 - toTheNearestEnemy;
 
 	// Decide if we need to go left
 	if (mClosestFruit->GetCentralPosition().x < mCharacter->GetCentralPosition().x)

@@ -74,6 +74,6 @@ const double	kRainbowMutationRate = 0.1;
 const double	kMaxPerturbation = 0.3; //the maximum amount the ga may mutate each weight by
 const int		kNumElite = 4; //used for elitism
 const int		kNumCopiesElite = 1;
-const int		kGenAlgUpdateTime = 72000; //60 seconds
+const int		kGenAlgUpdateTime = 108000; //90 seconds
 
 #endif //RAINBOW_CONSTANTS_H

@@ -75,6 +75,7 @@ private:
 	bool		 mAIOn;
 
 	bool		 mAllowMutation;
+	double		 mMutationRate;
 };
 
 //--------------------------------------------------------------------------------------------------

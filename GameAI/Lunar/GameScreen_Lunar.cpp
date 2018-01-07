@@ -33,6 +33,7 @@ GameScreen_Lunar::GameScreen_Lunar(SDL_Renderer* renderer) : GameScreen(renderer
 		mAILanders[i] = new LunarLander(renderer, Vector2D(400,125), Rect2D(mPlatformPosition.x, mPlatformPosition.y, mPlatform->GetWidth(), mPlatform->GetHeight()));
 	RestartGA();
 	mAllowMutation = true;
+	mMutationRate = 900;
 	mAccumulatedDeltaTime = 0;
 	//-------------------------------------
 
@@ -187,6 +188,28 @@ void GameScreen_Lunar::UpdateAILanders(size_t deltaTime, SDL_Event e)
 	//Are all finished?
 	if (numberDeadOrLanded == kNumberOfAILanders)
 	{
+		int landedAICount = 0;
+		for (int i = 0; i < kNumberOfAILanders; i++)
+		{
+			if (mAILanders[i]->HasLanded())
+			{
+				landedAICount++;
+			}
+		}
+
+		if (landedAICount > 15)
+			mMutationRate = 0;
+		else if (landedAICount > 0)
+			mMutationRate /= (3 * landedAICount);
+		else if (landedAICount == 0)
+		{
+			if (mMutationRate < 800)
+				mMutationRate += 50;
+		}
+
+		if (landedAICount == 100)
+			mPause = true;
+
 		CalculateFitness();
 		return;
 	}
@@ -260,34 +283,56 @@ void GameScreen_Lunar::CalculateFitness()
 // Select the top 'kChromosomesToEvolve' landers based on their score
 void GameScreen_Lunar::Selection()
 {
-	mSelectedAIChromosomes[kNumberOfAILanders][kNumberOfChromosomeElements] = { };
+	//mSelectedAIChromosomes[kNumberOfAILanders][kNumberOfChromosomeElements] = { };
 
-	double previousHighestScore = 1000000;
-	double currentHighestScore;
-	int highestIndex;
-	
-	// Acquire the highest scores
-	for (int i = 0; i < kChromosomesToEvolve; i++)
-	{		
-		highestIndex = 0;
-		currentHighestScore = 0;
+	//double previousHighestScore = 1000000;
+	//double currentHighestScore;
+	//int highestIndex;
+	//
+	//// Acquire the highest scores
+	//for (int i = 0; i < kChromosomesToEvolve; i++)
+	//{		
+	//	highestIndex = 0;
+	//	currentHighestScore = 0;
 
-		for (int j = 0; j < kNumberOfAILanders; j++)
+	//	for (int j = 0; j < kNumberOfAILanders; j++)
+	//	{
+	//		if (mFitnessValues[j] < previousHighestScore // Must be lower than the previous place high score to find the next place high score
+	//			&& mFitnessValues[j] > currentHighestScore) // But higher than all the other scores
+	//		{
+	//			currentHighestScore = mFitnessValues[j];
+	//			highestIndex = j;
+	//		}
+	//	}
+
+	//	previousHighestScore = currentHighestScore;
+
+	//	// Copy over the chromosomes from this high scoring lander
+	//	for (int action = 0; action < kNumberOfChromosomeElements; action++)
+	//	{
+	//		mSelectedAIChromosomes[i][action] = mChromosomes[highestIndex][action];
+	//	}
+	//}
+
+	int current = 0;
+	int randomIndex = 0;
+	int highest = 0;
+	int tournamentPool = 30; //<<<<<< Pool Size 
+
+	for (int current = 0; current < kNumberOfAILanders; current++)
+	{
+		highest = rand() % kNumberOfChromosomeElements;
+		for (int i = 0; i < tournamentPool; i++)
 		{
-			if (mFitnessValues[j] < previousHighestScore // Must be lower than the previous place high score to find the next place high score
-				&& mFitnessValues[j] > currentHighestScore) // But higher than all the other scores
-			{
-				currentHighestScore = mFitnessValues[j];
-				highestIndex = j;
-			}
+			randomIndex = rand() % kNumberOfChromosomeElements;
+			if (mFitnessValues[highest] < mFitnessValues[randomIndex])
+				highest = randomIndex;
 		}
+		//cout << "Selected: " << highest << endl;
 
-		previousHighestScore = currentHighestScore;
-
-		// Copy over the chromosomes from this high scoring lander
-		for (int action = 0; action < kNumberOfChromosomeElements; action++)
+		for (int i = 0; i < kNumberOfChromosomeElements; i++)
 		{
-			mSelectedAIChromosomes[i][action] = mChromosomes[highestIndex][action];
+			mSelectedAIChromosomes[current][i] = mChromosomes[highest][i];
 		}
 	}
 
@@ -300,23 +345,47 @@ void GameScreen_Lunar::Selection()
 // Fill the rest of the new chromosomes with a mix of genes from the high scoring landers.
 void GameScreen_Lunar::Crossover()
 {
-	for (int i = 0; i < kNumberOfAILanders; i++)
+	if (mMutationRate < 1)
 	{
-		int randomIndex1 = (rand() % kChromosomesToEvolve);
-		int randomIndex2 = (rand() % kChromosomesToEvolve);
-
-		// Half the chromosomes will be come from randomIndex1
-		for (int action = 0; action < kNumberOfChromosomeElements / 2; action++)
+		for (int i = 0; i < kNumberOfAILanders; i += 2)
 		{
-			mChromosomes[i][action] = mSelectedAIChromosomes[randomIndex1][action];
-		}
+			//if (rand() % 10000 < kCrossoverRate)
+			//{
+			for (int j = 0; j < kNumberOfAILanders / 2; j++)
+			{
+				mChromosomes[i][j] = mSelectedAIChromosomes[i][j];
+				mChromosomes[i + 1][j] = mSelectedAIChromosomes[i + 1][j];
+			}
 
-		// Half the chromosomes will be come from randomIndex2
-		for (int action = kNumberOfChromosomeElements / 2; action < kNumberOfChromosomeElements; action++)
-		{
-			mChromosomes[i][action] = mSelectedAIChromosomes[randomIndex2][action];
+			for (int j = kNumberOfAILanders / 2; j < kNumberOfAILanders; j++)
+			{
+				mChromosomes[i][j] = mSelectedAIChromosomes[i + 1][j];
+				mChromosomes[i + 1][j] = mSelectedAIChromosomes[i][j];
+			}
 		}
 	}
+	else
+	{
+		for (int i = 0; i < kNumberOfAILanders; i++)
+		{
+			int randomIndex1 = (rand() % kChromosomesToEvolve);
+			int randomIndex2 = (rand() % kChromosomesToEvolve);
+
+			// Half the chromosomes will be come from randomIndex1
+			for (int action = 0; action < kNumberOfChromosomeElements / 2; action++)
+			{
+				mChromosomes[i][action] = mSelectedAIChromosomes[randomIndex1][action];
+			}
+
+			// Half the chromosomes will be come from randomIndex2
+			for (int action = kNumberOfChromosomeElements / 2; action < kNumberOfChromosomeElements; action++)
+			{
+				mChromosomes[i][action] = mSelectedAIChromosomes[randomIndex2][action];
+			}
+		}
+	}
+	
+
 
 	Mutation();
 }
@@ -328,7 +397,10 @@ void GameScreen_Lunar::Mutation()
 {
 	for (int i = 0; i < kNumberOfAILanders; i++)
 	{
-		mChromosomes[i][(rand() % kNumberOfChromosomeElements)] = (LunarAction)(rand() % LunarAction_MaxActions);
+		if (rand() % 10000 < mMutationRate)
+		{
+			mChromosomes[i][(rand() % kNumberOfChromosomeElements)] = (LunarAction)(rand() % LunarAction_MaxActions);
+		}
 	}
 
 	RestartGA();
