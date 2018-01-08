@@ -273,4 +273,10 @@ void GameScreen_Conway::DetermineState()
 			}
 		}
 	}
+
+	// Delete the new map we created
+	for (int i = 0; i < kConwayScreenWidth / kConwayTileDimensions; i++)
+		delete mapTwo[i];
+
+	delete mapTwo;
 }

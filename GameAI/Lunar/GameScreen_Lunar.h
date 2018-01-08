@@ -46,11 +46,12 @@ protected:
 	void ClearChromosomes()								;//{;}
 
 	void UpdateAILanders(size_t deltaTime, SDL_Event e)	;//{;}
+
 	void CalculateFitness()								;//{;}
-	
 	void Selection()									;//{;}
 	void Crossover()									;//{;}
 	void Mutation()										;//{;}
+
 	void RestartGA()									;//{;}
 
 	void SaveSolution()									;//{;}

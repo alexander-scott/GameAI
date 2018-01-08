@@ -28,6 +28,7 @@ const double kAirTimeWeight				 = 1.0;  //Todo: Change these values
 
 const double kThrustDuration			 = 0.1; //DO NOT CHANGE
 
-const int kChromosomesToEvolve			 = 20;   // ADDED BY ALEX
+const int    kLandersToEvolve		 = 20;   // ADDED BY ALEX
+const double kStartMutationRate			 = 800;  // ADDED BY ALEX
 
 #endif //LUNAR_CONSTANTS_H

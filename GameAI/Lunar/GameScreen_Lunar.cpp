@@ -33,7 +33,7 @@ GameScreen_Lunar::GameScreen_Lunar(SDL_Renderer* renderer) : GameScreen(renderer
 		mAILanders[i] = new LunarLander(renderer, Vector2D(400,125), Rect2D(mPlatformPosition.x, mPlatformPosition.y, mPlatform->GetWidth(), mPlatform->GetHeight()));
 	RestartGA();
 	mAllowMutation = true;
-	mMutationRate = 900;
+	mMutationRate = kStartMutationRate;
 	mAccumulatedDeltaTime = 0;
 	//-------------------------------------
 
@@ -197,20 +197,28 @@ void GameScreen_Lunar::UpdateAILanders(size_t deltaTime, SDL_Event e)
 			}
 		}
 
-		if (landedAICount > 15)
-			mMutationRate = 0;
-		else if (landedAICount > 0)
-			mMutationRate /= (3 * landedAICount);
-		else if (landedAICount == 0)
+		cout << landedAICount << " landers landed out of " << kNumberOfAILanders << endl;
+
+		if (landedAICount == 100) // Simulation complete
 		{
-			if (mMutationRate < 800)
-				mMutationRate += 50;
+			mPause = true;
+			SaveSolution();
+		}
+		else
+		{
+			if (landedAICount > 15)
+				mMutationRate = 0;
+			else if (landedAICount > 0)
+				mMutationRate /= (3 * landedAICount);
+			else if (landedAICount == 0)
+			{
+				if (mMutationRate < kStartMutationRate)
+					mMutationRate += 50;
+			}
+
+			CalculateFitness();
 		}
 
-		if (landedAICount == 100)
-			mPause = true;
-
-		CalculateFitness();
 		return;
 	}
 
@@ -255,19 +263,18 @@ void GameScreen_Lunar::CalculateFitness()
 		double speed = mAILanders[i]->GetSpeed();
 
 		double disFit = kLunarScreenWidth - std::sqrt(x_diff * x_diff + y_diff * y_diff);
-		double rotFit = 1 / (std::abs(rotAngle) + 1);
+		double rotFit = 500 * (1 / (std::abs(rotAngle) + 1));
 		double speedFit = survivalTime / (speed + 1);
 
 		if (mAILanders[i]->IsAlive()) // If the lander survived
 		{
 			// The shortest time to reach the platform is best
 			mFitnessValues[i] = 10000 - survivalTime;
-			cout << "LANDED ON PLATFORM! ";
 		}
 		else
 		{
 			// A mixture of closest distance to platform, closest rotation to 0, time survived/speed
-			mFitnessValues[i] = (disFit) + (500 * rotFit) + (speedFit);
+			mFitnessValues[i] = (disFit) + (rotFit) + (speedFit);
 		}
 
 		totalFitness += mFitnessValues[i];
@@ -283,56 +290,26 @@ void GameScreen_Lunar::CalculateFitness()
 // Select the top 'kChromosomesToEvolve' landers based on their score
 void GameScreen_Lunar::Selection()
 {
-	//mSelectedAIChromosomes[kNumberOfAILanders][kNumberOfChromosomeElements] = { };
+	int randLanderIndex = 0;
+	int highestFitnessIndex = 0;
 
-	//double previousHighestScore = 1000000;
-	//double currentHighestScore;
-	//int highestIndex;
-	//
-	//// Acquire the highest scores
-	//for (int i = 0; i < kChromosomesToEvolve; i++)
-	//{		
-	//	highestIndex = 0;
-	//	currentHighestScore = 0;
-
-	//	for (int j = 0; j < kNumberOfAILanders; j++)
-	//	{
-	//		if (mFitnessValues[j] < previousHighestScore // Must be lower than the previous place high score to find the next place high score
-	//			&& mFitnessValues[j] > currentHighestScore) // But higher than all the other scores
-	//		{
-	//			currentHighestScore = mFitnessValues[j];
-	//			highestIndex = j;
-	//		}
-	//	}
-
-	//	previousHighestScore = currentHighestScore;
-
-	//	// Copy over the chromosomes from this high scoring lander
-	//	for (int action = 0; action < kNumberOfChromosomeElements; action++)
-	//	{
-	//		mSelectedAIChromosomes[i][action] = mChromosomes[highestIndex][action];
-	//	}
-	//}
-
-	int current = 0;
-	int randomIndex = 0;
-	int highest = 0;
-	int tournamentPool = 30; //<<<<<< Pool Size 
-
-	for (int current = 0; current < kNumberOfAILanders; current++)
+	for (int iLander = 0; iLander < kNumberOfAILanders; iLander++)
 	{
-		highest = rand() % kNumberOfChromosomeElements;
-		for (int i = 0; i < tournamentPool; i++)
+		highestFitnessIndex = rand() % kNumberOfAILanders;
+
+		for (int i = 0; i < kLandersToEvolve; i++)
 		{
-			randomIndex = rand() % kNumberOfChromosomeElements;
-			if (mFitnessValues[highest] < mFitnessValues[randomIndex])
-				highest = randomIndex;
+			randLanderIndex = rand() % kNumberOfAILanders; 
+
+			if (mFitnessValues[highestFitnessIndex] < mFitnessValues[randLanderIndex])
+			{
+				highestFitnessIndex = randLanderIndex;
+			}
 		}
-		//cout << "Selected: " << highest << endl;
 
 		for (int i = 0; i < kNumberOfChromosomeElements; i++)
 		{
-			mSelectedAIChromosomes[current][i] = mChromosomes[highest][i];
+			mSelectedAIChromosomes[iLander][i] = mChromosomes[highestFitnessIndex][i];
 		}
 	}
 
@@ -349,8 +326,6 @@ void GameScreen_Lunar::Crossover()
 	{
 		for (int i = 0; i < kNumberOfAILanders; i += 2)
 		{
-			//if (rand() % 10000 < kCrossoverRate)
-			//{
 			for (int j = 0; j < kNumberOfAILanders / 2; j++)
 			{
 				mChromosomes[i][j] = mSelectedAIChromosomes[i][j];
@@ -368,8 +343,8 @@ void GameScreen_Lunar::Crossover()
 	{
 		for (int i = 0; i < kNumberOfAILanders; i++)
 		{
-			int randomIndex1 = (rand() % kChromosomesToEvolve);
-			int randomIndex2 = (rand() % kChromosomesToEvolve);
+			int randomIndex1 = (rand() % kLandersToEvolve);
+			int randomIndex2 = (rand() % kLandersToEvolve);
 
 			// Half the chromosomes will be come from randomIndex1
 			for (int action = 0; action < kNumberOfChromosomeElements / 2; action++)
@@ -385,8 +360,6 @@ void GameScreen_Lunar::Crossover()
 		}
 	}
 	
-
-
 	Mutation();
 }
 
