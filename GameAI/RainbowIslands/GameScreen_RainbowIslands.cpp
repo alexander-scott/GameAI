@@ -46,14 +46,14 @@ GameScreen_RainbowIslands::GameScreen_RainbowIslands(SDL_Renderer* renderer) : G
 
 	//Get the weights from the GA and insert into Bub's brains
 	mCurrGenGenomes = mGeneticAlgorithm->GetChromos();
-	mNeuralNetwork->PutWeights(mCurrGenGenomes[mCurrGenGenomeIndex].vWeights);
+	mNeuralNetwork->PutWeights(mCurrGenGenomes[mCurrGenGenomeIndex].Weights);
 	
 	cout << "Current Weight Set: " << mCurrGenGenomeIndex << endl;
 
 	if (!ReadWeightsFromFile()) 
 	{
 		cout << "Error loading weights" << endl;
-		mNeuralNetwork->PutWeights(mCurrGenGenomes[mCurrGenGenomeIndex].vWeights);
+		mNeuralNetwork->PutWeights(mCurrGenGenomes[mCurrGenGenomeIndex].Weights);
 	}
 }
 
@@ -445,9 +445,9 @@ void GameScreen_RainbowIslands::RestartLevel()
 	float heightScore = min((1 - (mCharacter->GetCentralPosition().y / kRainbowIslandsScreenHeight)) * kHeightMultiplier, 1000);
 
 	// Calculate the fitness for the current genome in this generation. Points + Time + Height - RainbowsFired
-	mCurrGenGenomes[mCurrGenGenomeIndex].dFitness = pointScore + timeScore + heightScore - mRainbowsFired;
+	mCurrGenGenomes[mCurrGenGenomeIndex].Fitness = pointScore + timeScore + heightScore - mRainbowsFired;
 
-	cout << "Score : " << mCurrGenGenomes[mCurrGenGenomeIndex].dFitness << endl;
+	cout << "Score : " << mCurrGenGenomes[mCurrGenGenomeIndex].Fitness << endl;
 
 	// Increment the genome index in this generation
 	mCurrGenGenomeIndex++;
@@ -471,7 +471,7 @@ void GameScreen_RainbowIslands::RestartLevel()
 		mCurrGenGenomes = mGeneticAlgorithm->Epoch(mCurrGenGenomes);
 
 		// Insert the newly evolved genomes into the neural network
-		mNeuralNetwork->PutWeights(mGeneticAlgorithm->GetChromos()[mCurrGenGenomeIndex].vWeights);
+		mNeuralNetwork->PutWeights(mGeneticAlgorithm->GetChromos()[mCurrGenGenomeIndex].Weights);
 
 		// Update the stats
 		mCurrGenAvgFitness.push_back(mGeneticAlgorithm->AverageFitness());
@@ -481,7 +481,7 @@ void GameScreen_RainbowIslands::RestartLevel()
 		SaveWeightsToFile();
 	}
 
-	mNeuralNetwork->PutWeights(mCurrGenGenomes[mCurrGenGenomeIndex].vWeights);
+	mNeuralNetwork->PutWeights(mCurrGenGenomes[mCurrGenGenomeIndex].Weights);
 
 	cout << "Current Weight Set: " << mCurrGenGenomeIndex << endl;
 
@@ -872,23 +872,15 @@ void GameScreen_RainbowIslands::UpdateNeuralNetwork()
 		VirtualJoypad::Instance()->UpArrow = false;
 
 
-	//cout << "UP:" << VirtualJoypad::Instance()->UpArrow << endl;
-	//cout << "DOWN:" << VirtualJoypad::Instance()->DownArrow << endl;
-	//cout << "LEFT:" << VirtualJoypad::Instance()->LeftArrow << endl;
-	//cout << "RIGHT:" << VirtualJoypad::Instance()->RightArrow << endl;
-
-
 	if (VirtualJoypad::Instance()->ForceRestartLevel == true)
 	{
 		VirtualJoypad::Instance()->ForceRestartLevel = false;
-		//mNeuralNetwork->NetworkTrainingEpoch(inputsBackup, output, mBubCharacter->GetPoints(), 410);
 		RestartLevel();
 	}
 
 	if (mTimeToCompleteLevel <= 0 || mCurrGenUpdateTimer > kGenAlgUpdateTime)
 	{
 		//Back Prop
-		//mNeuralNetwork->NetworkTrainingEpoch(inputsBackup, output, mBubCharacter->GetPoints(), 410);
 		RestartLevel();
 	}
 
@@ -903,14 +895,11 @@ CharacterFruit* GameScreen_RainbowIslands::FindClosestFruit()
 
 	for each (CharacterFruit* var in mFruit)
 	{
-		//if (var->GetCentralPosition().y < mBubCharacter->GetCentralPosition().y + kTileSpriteSheetHeight)
+		current = Vec2DDistance(var->GetCentralPosition(), charPos);
+		if (current < closestFruitDist)
 		{
-			current = Vec2DDistance(var->GetCentralPosition(), charPos);
-			if (current < closestFruitDist)
-			{
-				closestFruitDist = current;
-				closestFruit = var;
-			}
+			closestFruitDist = current;
+			closestFruit = var;
 		}
 	}
 
@@ -944,7 +933,7 @@ void GameScreen_RainbowIslands::SaveWeightsToFile()
 
 	for (int i = 0; i < kPopulationLimit; i++)
 	{
-		for each (double vecOfWeights in mCurrGenGenomes[i].vWeights)
+		for each (double vecOfWeights in mCurrGenGenomes[i].Weights)
 		{
 			fs << vecOfWeights << endl;
 		}
@@ -960,7 +949,7 @@ bool GameScreen_RainbowIslands::ReadWeightsFromFile()
 
 	for (int i = 0; i < kPopulationLimit; i++)
 	{
-		mCurrGenGenomes[i].vWeights;
+		mCurrGenGenomes[i].Weights;
 		vector<double> loadedWeights;
 		for (size_t j = 0; j < mNeuralNetwork->GetNumberOfWeights(); j++)
 		{
@@ -968,7 +957,7 @@ bool GameScreen_RainbowIslands::ReadWeightsFromFile()
 			fs >> input;
 			loadedWeights.push_back(stod(input));
 		}
-		mCurrGenGenomes[i].vWeights = loadedWeights;
+		mCurrGenGenomes[i].Weights = loadedWeights;
 	}
 
 	fs.close();

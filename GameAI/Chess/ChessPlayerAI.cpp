@@ -15,12 +15,12 @@ using namespace::std;
 
 //--------------------------------------------------------------------------------------------------
 
-const int kPawnScore		= 1;
-const int kKnightScore		= 1;
-const int kBishopScore		= 1;
-const int kRookScore		= 1;
-const int kQueenScore		= 1;
-const int kKingScore		= 1;
+const int kPawnScore		= 10;
+const int kKnightScore		= 80;
+const int kBishopScore		= 80;
+const int kRookScore		= 150;
+const int kQueenScore		= 200;
+const int kKingScore		= 1000000;
 
 const int kCheckScore		= 1;
 const int kCheckmateScore	= 1;
@@ -135,11 +135,11 @@ bool ChessPlayerAI::TakeATurn(SDL_Event e)
 	DWORD startTime		 = GetTickCount();
 	DWORD currentTime	 = 0;
 
-	_maxBestMove = nullptr;
+	mMaxBestMove = nullptr;
 
-	MiniMax(*mChessBoard, 0, _maxBestMove);
+	MiniMax(*mChessBoard, 0, mMaxBestMove);
 
-	bool gameStillActive = MakeAMove(_maxBestMove);
+	bool gameStillActive = MakeAMove(mMaxBestMove);
 	currentTime = GetTickCount();
 	cout << " - [AI Time taken: " << std::setprecision(10) << (currentTime-startTime)/1000.0f << " seconds]";
 	return gameStillActive;
@@ -152,13 +152,14 @@ bool ChessPlayerAI::TakeATurn(SDL_Event e)
 
 int ChessPlayerAI::MiniMax(Board board, int depth, Move* bestMove)
 {
-	int score = Maximise(board, depth, _maxBestMove, 10000000);
+	int score = Maximise(board, depth, mMaxBestMove, 10000000);
 	return score;
 }
 
 //--------------------------------------------------------------------------------------------------
 
-int ChessPlayerAI::Maximise(Board board, int depth, Move* bestMove, int parentLow)
+// Find best score for AI
+int ChessPlayerAI::Maximise(Board board, int depth, Move* bestMove, int beta)
 {
 	// If the depth limit is reached, don't go any deeper and return the score of the board
 	if (depth >= *mDepthToSearch) 
@@ -187,21 +188,27 @@ int ChessPlayerAI::Maximise(Board board, int depth, Move* bestMove, int parentLo
 		// If the new alpha is greater than the previous best score (or hasn't been set yet)
 		if (bestChildMove == nullptr || alpha > bestChildMove->score)
 		{
+			if (bestChildMove != nullptr) // Free memory
+				delete bestChildMove;
+
 			bestChildMove = new Move((*it));
 			bestChildMove->score = alpha;
 		}
 
 		// If a move is found to be worse than the best score currently stored, return out of the tree early.
-		if (alpha > parentLow)
+		if (alpha > beta)
 		{
+			delete moves;
 			return alpha;
 		}
 	}
 
+	delete moves;
+
 	// If we're on the top layer, return the best move available
 	if (depth == 0)
 	{
-		_maxBestMove = bestChildMove;
+		mMaxBestMove = bestChildMove;
 	}
 
 	return alpha;
@@ -209,18 +216,16 @@ int ChessPlayerAI::Maximise(Board board, int depth, Move* bestMove, int parentLo
 
 //--------------------------------------------------------------------------------------------------
 
-int ChessPlayerAI::Minimise(Board board, int depth, Move* bestMove, int parentHigh)
+// Find the best score for player
+int ChessPlayerAI::Minimise(Board board, int depth, Move* bestMove, int alpha)
 {
-	//TODO: Code Minimise function.
-
-	//if depth limit is reached
 	if (depth >= *mDepthToSearch) 
 		return ScoreTheBoard(board);
 
 	vector<Move>* moves = new vector<Move>;
 	GetAllMoveOptions(board, (mTeamColour == COLOUR_WHITE ? COLOUR_BLACK : COLOUR_WHITE), moves);
 
-	int alpha = 10000000;
+	int beta = 10000000;
 	Move* bestChildMove = nullptr;
 
 	vector<Move>::iterator it;
@@ -231,21 +236,27 @@ int ChessPlayerAI::Minimise(Board board, int depth, Move* bestMove, int parentHi
 		newBoard.currentLayout[it->to_X][it->to_Y] = mChessBoard->currentLayout[it->from_X][it->from_Y];
 		newBoard.currentLayout[it->from_X][it->from_Y] = BoardPiece();
 
-		alpha = min(alpha, Maximise(newBoard, depth + 1, &(*it), alpha));
+		beta = min(beta, Maximise(newBoard, depth + 1, &(*it), beta));
 
-		if (bestChildMove == nullptr || alpha < bestChildMove->score)
+		if (bestChildMove == nullptr || beta < bestChildMove->score)
 		{
+			if (bestChildMove != nullptr)
+				delete bestChildMove;
+				
 			bestChildMove = new Move((*it));
-			bestChildMove->score = alpha;
+			bestChildMove->score = beta;
 		}
 
-		if (alpha < parentHigh)
+		if (beta < alpha)
 		{
-			return alpha;
+			delete moves;
+			return beta;
 		}
 	}
 
-	return alpha;
+	delete moves;
+
+	return beta;
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -271,9 +282,6 @@ void ChessPlayerAI::CropMoves(vector<Move>* moves, unsigned int maxNumberOfMoves
 
 int ChessPlayerAI::ScoreTheBoard(Board boardToScore)
 {
-	//TODO
-	//return (1 + rand() % static_cast<int>(1000 + 1));
-
 	float numQueensPlayer = 0, numQueensAI = 0, numRooksPlayer = 0, numRooksAI = 0, numBishopsPlayer = 0, 
 		numBishopsAI = 0, numKnightsPlayer = 0, numKnightsAI = 0, numPawnsPlayer = 0, numPawnsAI = 0;
 
@@ -317,7 +325,7 @@ int ChessPlayerAI::ScoreTheBoard(Board boardToScore)
 					break;
 
 				case PIECE_KING:
-					score += 1000000;
+					score += kKingScore;
 					score += kingMiddleGameScoreTableAI[x][y];
 					break;
 				}
@@ -354,7 +362,7 @@ int ChessPlayerAI::ScoreTheBoard(Board boardToScore)
 					break;
 
 				case PIECE_KING:
-					score -= 1000000;
+					score -= kKingScore;
 					score -= kingMiddleGameScoreTablePlayer[x][y];
 					break;
 				}
@@ -362,10 +370,11 @@ int ChessPlayerAI::ScoreTheBoard(Board boardToScore)
 		}
 	}
 
-	score += (200 * (numQueensAI - numQueensPlayer)) +
-			(150 * (numRooksAI - numRooksPlayer)) +
-			(80 *(numBishopsAI - numBishopsPlayer + numKnightsAI - numKnightsPlayer)) +
-			(10 * (numPawnsAI - numPawnsPlayer));
+	score += (kQueenScore * (numQueensAI - numQueensPlayer)) +
+			(kRookScore * (numRooksAI - numRooksPlayer)) +
+			(kBishopScore *(numBishopsAI - numBishopsPlayer)) +
+			(kKnightScore * (numKnightsAI - numKnightsPlayer)) +
+			(kPawnScore * (numPawnsAI - numPawnsPlayer));
 
 	return score;
 }

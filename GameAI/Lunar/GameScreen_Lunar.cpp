@@ -206,6 +206,7 @@ void GameScreen_Lunar::UpdateAILanders(size_t deltaTime, SDL_Event e)
 		}
 		else
 		{
+			// Update the mutation rate
 			if (landedAICount > 15)
 				mMutationRate = 0;
 			else if (landedAICount > 0)
@@ -293,21 +294,21 @@ void GameScreen_Lunar::Selection()
 	int randLanderIndex = 0;
 	int highestFitnessIndex = 0;
 
-	for (int iLander = 0; iLander < kNumberOfAILanders; iLander++)
+	for (int iLander = 0; iLander < kNumberOfAILanders; iLander++) // For every lander
 	{
-		highestFitnessIndex = rand() % kNumberOfAILanders;
+		highestFitnessIndex = rand() % kNumberOfAILanders; // Find a random lander index
 
-		for (int i = 0; i < kLandersToEvolve; i++)
+		for (int i = 0; i < kLandersToEvolve; i++) // This loop decides the number of landers that will be competing to find the highest fitness
 		{
 			randLanderIndex = rand() % kNumberOfAILanders; 
 
-			if (mFitnessValues[highestFitnessIndex] < mFitnessValues[randLanderIndex])
+			if (mFitnessValues[highestFitnessIndex] < mFitnessValues[randLanderIndex]) // Find the highest fitness in 'kLandersToEvolve' landers
 			{
 				highestFitnessIndex = randLanderIndex;
 			}
 		}
 
-		for (int i = 0; i < kNumberOfChromosomeElements; i++)
+		for (int i = 0; i < kNumberOfChromosomeElements; i++) // Add the fittest chromsomes to mSelectedAIChromosomes
 		{
 			mSelectedAIChromosomes[iLander][i] = mChromosomes[highestFitnessIndex][i];
 		}

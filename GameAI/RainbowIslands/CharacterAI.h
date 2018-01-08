@@ -17,7 +17,4 @@ public:
 	~CharacterAI();
 
 	vector<double> GetSurroundings(Vector2D enemyLocation, vector<CharacterRainbow*> _mRainbows);
-
-	vector<Vector2D> surroundingPositions;
-	vector<double> surroundings;
 };

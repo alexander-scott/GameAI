@@ -22,8 +22,8 @@ public:
 //--------------------------------------------------------------------------------------------------
 protected:
 	int  MiniMax(Board board, int depth, Move* bestMove);
-	int  Maximise(Board board, int depth, Move* bestMove, int alphaBeta);
-	int  Minimise(Board board, int depth, Move* bestMove, int alphaBeta);
+	int  Maximise(Board board, int depth, Move* bestMove, int beta);
+	int  Minimise(Board board, int depth, Move* bestMove, int alpha);
 	bool MakeAMove(Move* move);
 
 	void OrderMoves(Board board, vector<Move>* moves, bool highToLow);
@@ -34,7 +34,7 @@ protected:
 private:
 	int* mDepthToSearch;
 
-	Move* _maxBestMove;
+	Move* mMaxBestMove;
 };
 
 

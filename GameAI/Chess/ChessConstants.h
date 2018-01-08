@@ -43,7 +43,7 @@ const unsigned int kMaxMovesPerPly			= 20;
 //Number of pieces at start of game.
 const unsigned int kTotalNumberOfStartingPieces = 16;
 
-// Friendly score tables
+// Player score tables
 const float pawnScoreTablePlayer[8][8] = {			{ 0,  0,  0,  0,  0,  0,  0,  0, },
 												{ 50, 50, 50, 50, 50, 50, 50, 50, },
 												{ 10, 10, 20, 30, 30, 20, 10, 10, } ,
@@ -107,7 +107,7 @@ const float kingEndGameScoreTablePlayer[8][8] = {		{ -50,-40,-30,-20,-20,-30,-40
 												{ -30,-30,  0,  0,  0,  0,-30,-30, } ,
 												{ -50,-30,-30,-30,-30,-30,-30,-50 } };
 
-// Enemy score tables
+// AI score tables
 const float pawnScoreTableAI[8][8] = {			{ 0,  0,  0,  0,  0,  0,  0,  0 },
 													{ 5, 10, 10,-20,-20, 10, 10,  5, },
 													{ 5, -5,-10,  0,  0,-10, -5,  5, } ,

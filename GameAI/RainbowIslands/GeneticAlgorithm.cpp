@@ -4,28 +4,28 @@ std::random_device dseeder;
 std::mt19937 GArng(dseeder());
 std::uniform_real_distribution<double> genDub(0, 1); //(min, max)
 
-GeneticAlgorithm::GeneticAlgorithm(int popsize, double MutRat, double CrossRat, int numWeights) : m_iPopSize(popsize), m_dMutationRate(MutRat), m_dCrossoverRate(CrossRat)
+GeneticAlgorithm::GeneticAlgorithm(int popsize, double MutRat, double CrossRat, int numWeights) : mPopulationSize(popsize), mMutationRate(MutRat), mCrossoverRate(CrossRat)
 {
-	m_dTotalFitness = 0;
-	m_cGeneration = 0;
-	m_iFittestGenome = 0;
-	m_dBestFitness = 0;
-	m_dWorstFitness = 99999999;
-	m_dAverageFitness = 0;
+	mTotalFitness = 0;
+	mGeneration = 0;
+	mFittestGenome = 0;
+	mBestFitness = 0;
+	mWorstFitness = 99999999;
+	mAverageFitness = 0;
 
 	//initialise population with chromosomes consisting of random
 	//weights and all fitnesses set to zero
-	for (int i = 0; i<m_iPopSize; ++i)
+	for (int i = 0; i<mPopulationSize; ++i)
 	{
-		m_vecPop.push_back(Genome());
+		mPopulation.push_back(Genome());
 
 		for (int j = 0; j < numWeights; ++j)
 		{
-			m_vecPop[i].vWeights.push_back(genDub(GArng));
+			mPopulation[i].Weights.push_back(genDub(GArng));
 		}
 	}
 
-	m_iChromoLength = numWeights;
+	mChromoLength = numWeights;
 }
 
 GeneticAlgorithm::~GeneticAlgorithm()
@@ -44,7 +44,7 @@ void GeneticAlgorithm::Mutate(vector<double> &chromo)
 	for (int i = 0; i < chromo.size(); ++i)
 	{
 		//do we perturb this weight?
-		if (genDub(GArng) < m_dMutationRate)
+		if (genDub(GArng) < mMutationRate)
 		{
 			//add or subtract a small value to the weight
 			chromo[i] += ((genDub(GArng) - genDub(GArng)) * kMaxPerturbation);
@@ -60,7 +60,7 @@ void GeneticAlgorithm::Mutate(vector<double> &chromo)
 Genome GeneticAlgorithm::GetChromoRoulette()
 {
 	//genDuberate a random number between 0 & total fitness count
-	double Slice = (double)(genDub(GArng) * m_dTotalFitness);
+	double Slice = (double)(genDub(GArng) * mTotalFitness);
 
 	//this will be set to the chosen chromosome
 	Genome TheChosenOne;
@@ -68,15 +68,15 @@ Genome GeneticAlgorithm::GetChromoRoulette()
 	//go through the chromosones adding up the fitness so far
 	double FitnessSoFar = 0;
 
-	for (int i = 0; i<m_iPopSize; ++i)
+	for (int i = 0; i<mPopulationSize; ++i)
 	{
-		FitnessSoFar += m_vecPop[i].dFitness;
+		FitnessSoFar += mPopulation[i].Fitness;
 
 		//if the fitness so far > random number return the chromo at 
 		//this point
 		if (FitnessSoFar >= Slice)
 		{
-			TheChosenOne = m_vecPop[i];
+			TheChosenOne = mPopulation[i];
 			break;
 		}
 
@@ -97,7 +97,7 @@ void GeneticAlgorithm::Crossover(const vector<double> &mum,
 {
 	//just return parents as offspring dependent on the rate
 	//or if parents are the same
-	if ((genDub(GArng) > m_dCrossoverRate) || (mum == dad))
+	if ((genDub(GArng) > mCrossoverRate) || (mum == dad))
 	{
 		baby1 = mum;
 		baby2 = dad;
@@ -106,7 +106,7 @@ void GeneticAlgorithm::Crossover(const vector<double> &mum,
 	}
 
 	//determine a crossover point
-	std::uniform_int_distribution<int> genInt(0, m_iChromoLength - 1); //(min, max)
+	std::uniform_int_distribution<int> genInt(0, mChromoLength - 1); //(min, max)
 
 	int cp = genInt(GArng);
 
@@ -136,13 +136,13 @@ void GeneticAlgorithm::Crossover(const vector<double> &mum,
 vector<Genome> GeneticAlgorithm::Epoch(vector<Genome> &old_pop)
 {
 	//assign the given population to the classes population
-	m_vecPop = old_pop;
+	mPopulation = old_pop;
 
 	//reset the appropriate variables
 	Reset();
 
 	//sort the population (for scaling and elitism)
-	sort(m_vecPop.begin(), m_vecPop.end());
+	sort(mPopulation.begin(), mPopulation.end());
 
 	//calculate best, worst, average and total fitness
 	CalculateBestWorstAvTot();
@@ -161,7 +161,7 @@ vector<Genome> GeneticAlgorithm::Epoch(vector<Genome> &old_pop)
 	//now we enter the GA loop
 
 	//repeat until a new population is generated
-	while (vecNewPop.size() < m_iPopSize)
+	while (vecNewPop.size() < mPopulationSize)
 	{
 		//grab two chromosones
 		Genome mum = GetChromoRoulette();
@@ -170,7 +170,7 @@ vector<Genome> GeneticAlgorithm::Epoch(vector<Genome> &old_pop)
 		//create some offspring via crossover
 		vector<double> baby1, baby2;
 
-		Crossover(mum.vWeights, dad.vWeights, baby1, baby2);
+		Crossover(mum.Weights, dad.Weights, baby1, baby2);
 
 		//now we mutate
 		Mutate(baby1);
@@ -182,9 +182,9 @@ vector<Genome> GeneticAlgorithm::Epoch(vector<Genome> &old_pop)
 	}
 
 	//finished so assign new pop back into m_vecPop
-	m_vecPop = vecNewPop;
+	mPopulation = vecNewPop;
 
-	return m_vecPop;
+	return mPopulation;
 }
 
 //-------------------------GrabNBest----------------------------------
@@ -200,7 +200,7 @@ void GeneticAlgorithm::GrabNBest(int NBest,	const int NumCopies, vector<Genome>	
 	{
 		for (int i = 0; i<NumCopies; ++i)
 		{
-			Pop.push_back(m_vecPop[(m_iPopSize - 1) - NBest]);
+			Pop.push_back(mPopulation[(mPopulationSize - 1) - NBest]);
 		}
 	}
 }
@@ -212,37 +212,37 @@ void GeneticAlgorithm::GrabNBest(int NBest,	const int NumCopies, vector<Genome>	
 //---------------------------------------------------------------------
 void GeneticAlgorithm::CalculateBestWorstAvTot()
 {
-	m_dTotalFitness = 0;
+	mTotalFitness = 0;
 
 	double HighestSoFar = 0;
 	double LowestSoFar = 9999999;
 
-	for (int i = 0; i<m_iPopSize; ++i)
+	for (int i = 0; i<mPopulationSize; ++i)
 	{
 		//update fittest if necessary
-		if (m_vecPop[i].dFitness > HighestSoFar)
+		if (mPopulation[i].Fitness > HighestSoFar)
 		{
-			HighestSoFar = m_vecPop[i].dFitness;
+			HighestSoFar = mPopulation[i].Fitness;
 
-			m_iFittestGenome = i;
+			mFittestGenome = i;
 
-			m_dBestFitness = HighestSoFar;
+			mBestFitness = HighestSoFar;
 		}
 
 		//update worst if necessary
-		if (m_vecPop[i].dFitness < LowestSoFar)
+		if (mPopulation[i].Fitness < LowestSoFar)
 		{
-			LowestSoFar = m_vecPop[i].dFitness;
+			LowestSoFar = mPopulation[i].Fitness;
 
-			m_dWorstFitness = LowestSoFar;
+			mWorstFitness = LowestSoFar;
 		}
 
-		m_dTotalFitness += m_vecPop[i].dFitness;
+		mTotalFitness += mPopulation[i].Fitness;
 
 
 	}//next chromo
 
-	m_dAverageFitness = m_dTotalFitness / m_iPopSize;
+	mAverageFitness = mTotalFitness / mPopulationSize;
 }
 
 //-------------------------Reset()------------------------------
@@ -251,8 +251,8 @@ void GeneticAlgorithm::CalculateBestWorstAvTot()
 //--------------------------------------------------------------
 void GeneticAlgorithm::Reset()
 {
-	m_dTotalFitness = 0;
-	m_dBestFitness = 0;
-	m_dWorstFitness = 9999999;
-	m_dAverageFitness = 0;
+	mTotalFitness = 0;
+	mBestFitness = 0;
+	mWorstFitness = 9999999;
+	mAverageFitness = 0;
 }
