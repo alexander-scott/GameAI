@@ -1,8 +1,8 @@
 #include "GeneticAlgorithm.h"
 
 std::random_device dseeder;
-std::mt19937 GArng(dseeder());
-std::uniform_real_distribution<double> genDub(0, 1); //(min, max)
+std::mt19937 RandSeed(dseeder());
+std::uniform_real_distribution<double> GetRand(0, 1); //(min, max)
 
 GeneticAlgorithm::GeneticAlgorithm(int popsize, double MutRat, double CrossRat, int numWeights) : mPopulationSize(popsize), mMutationRate(MutRat), mCrossoverRate(CrossRat)
 {
@@ -13,15 +13,14 @@ GeneticAlgorithm::GeneticAlgorithm(int popsize, double MutRat, double CrossRat, 
 	mWorstFitness = 99999999;
 	mAverageFitness = 0;
 
-	//initialise population with chromosomes consisting of random
-	//weights and all fitnesses set to zero
+	// Initialise population with chromosomes consisting of random weights and all fitnesses set to zero
 	for (int i = 0; i<mPopulationSize; ++i)
 	{
 		mPopulation.push_back(Genome());
 
 		for (int j = 0; j < numWeights; ++j)
 		{
-			mPopulation[i].Weights.push_back(genDub(GArng));
+			mPopulation[i].Weights.push_back(GetRand(RandSeed));
 		}
 	}
 
@@ -32,48 +31,38 @@ GeneticAlgorithm::~GeneticAlgorithm()
 {
 }
 
-//---------------------------------Mutate--------------------------------
-//
-//	mutates a chromosome by perturbing its weights by an amount not 
-//	greater than CParams::dMaxPerturbation
-//-----------------------------------------------------------------------
+// Randomly mutate a weight 
 void GeneticAlgorithm::Mutate(vector<double> &chromo)
 {
-	//traverse the chromosome and mutate each weight dependent
-	//on the mutation rate
+	// Traverse the chromosome and mutate each weight dependent on the mutation rate
 	for (int i = 0; i < chromo.size(); ++i)
 	{
-		//do we perturb this weight?
-		if (genDub(GArng) < mMutationRate)
+		// Only mutate this if our dice roll is less than the mutation rate
+		if (GetRand(RandSeed) < mMutationRate)
 		{
-			//add or subtract a small value to the weight
-			chromo[i] += ((genDub(GArng) - genDub(GArng)) * kMaxPerturbation);
+			// Add or subtract a small value to the weight
+			chromo[i] += ((GetRand(RandSeed) - GetRand(RandSeed)) * kMaxPerturbation);
 		}
 	}
 }
 
-//----------------------------------GetChromoRoulette()------------------
-//
-//	returns a chromo based on roulette wheel sampling
-//
-//-----------------------------------------------------------------------
+// Return a fit genome
 Genome GeneticAlgorithm::GetChromoRoulette()
 {
-	//genDuberate a random number between 0 & total fitness count
-	double Slice = (double)(genDub(GArng) * mTotalFitness);
+	// Get a random number between 0 & total fitness count
+	double Slice = (double)(GetRand(RandSeed) * mTotalFitness);
 
-	//this will be set to the chosen chromosome
+	// This will be set to the chosen chromosome
 	Genome TheChosenOne;
 
-	//go through the chromosones adding up the fitness so far
+	// Go through the chromosones totalling the fitness
 	double FitnessSoFar = 0;
 
 	for (int i = 0; i<mPopulationSize; ++i)
 	{
 		FitnessSoFar += mPopulation[i].Fitness;
 
-		//if the fitness so far > random number return the chromo at 
-		//this point
+		// If the fitness so far > random number return the chromo at this point
 		if (FitnessSoFar >= Slice)
 		{
 			TheChosenOne = mPopulation[i];
@@ -85,19 +74,14 @@ Genome GeneticAlgorithm::GetChromoRoulette()
 	return TheChosenOne;
 }
 
-//-------------------------------------Crossover()-----------------------
-//	
-//  given parents and storage for the offspring this method performs
-//	crossover according to the GAs crossover rate
-//-----------------------------------------------------------------------
+// Create offspring from parents
 void GeneticAlgorithm::Crossover(const vector<double> &mum,
 	const vector<double> &dad,
 	vector<double>       &baby1,
 	vector<double>       &baby2)
 {
-	//just return parents as offspring dependent on the rate
-	//or if parents are the same
-	if ((genDub(GArng) > mCrossoverRate) || (mum == dad))
+	// just return parents as offspring dependent on the rate or if parents are the same
+	if ((GetRand(RandSeed) > mCrossoverRate) || (mum == dad))
 	{
 		baby1 = mum;
 		baby2 = dad;
@@ -105,19 +89,19 @@ void GeneticAlgorithm::Crossover(const vector<double> &mum,
 		return;
 	}
 
-	//determine a crossover point
+	// Determine a crossover point
 	std::uniform_int_distribution<int> genInt(0, mChromoLength - 1); //(min, max)
 
-	int cp = genInt(GArng);
+	int popCount = genInt(RandSeed);
 
-	//create the offspring
-	for (int i = 0; i < cp; ++i)
+	// Create the offspring
+	for (int i = 0; i < popCount; ++i)
 	{
 		baby1.push_back(mum[i]);
 		baby2.push_back(dad[i]);
 	}
 
-	for (int i = cp; i<mum.size(); ++i)
+	for (int i = popCount; i<mum.size(); ++i)
 	{
 		baby1.push_back(dad[i]);
 		baby2.push_back(mum[i]);
@@ -126,76 +110,61 @@ void GeneticAlgorithm::Crossover(const vector<double> &mum,
 	return;
 }
 
-//-----------------------------------Epoch()-----------------------------
-//
-//	takes a population of chromosones and runs the algorithm through one
-//	 cycle.
-//	Returns a new population of chromosones.
-//
-//-----------------------------------------------------------------------
+// Updates and returns a new population of chromosones.
 vector<Genome> GeneticAlgorithm::Epoch(vector<Genome> &old_pop)
 {
-	//assign the given population to the classes population
+	// Assign the given population to the classes population
 	mPopulation = old_pop;
 
-	//reset the appropriate variables
+	// Reset the appropriate variables
 	Reset();
 
-	//sort the population (for scaling and elitism)
+	// Sort the population (for scaling and elitism)
 	sort(mPopulation.begin(), mPopulation.end());
 
-	//calculate best, worst, average and total fitness
-	CalculateBestWorstAvTot();
+	// Calculate best, worst, average and total fitness
+	CalculateTotals();
 
-	//create a temporary vector to store new chromosones
+	// Create a temporary vector to store new chromosones
 	vector <Genome> vecNewPop;
 
-	//Now to add a little elitism we shall add in some copies of the
-	//fittest genomes. Make sure we add an EVEN number or the roulette
-	//wheel sampling will crash
+	// Add in some copies of the fittness genomes
 	if (!(kNumCopiesElite * kNumElite % 2))
 	{
 		GrabNBest(kNumElite, kNumCopiesElite, vecNewPop);
 	}
 
-	//now we enter the GA loop
-
-	//repeat until a new population is generated
+	// Repeat until a new population is generated
 	while (vecNewPop.size() < mPopulationSize)
 	{
-		//grab two chromosones
+		// Grab two chromosones
 		Genome mum = GetChromoRoulette();
 		Genome dad = GetChromoRoulette();
 
-		//create some offspring via crossover
+		// Create some offspring via crossover
 		vector<double> baby1, baby2;
 
 		Crossover(mum.Weights, dad.Weights, baby1, baby2);
 
-		//now we mutate
+		// Now we mutate
 		Mutate(baby1);
 		Mutate(baby2);
 
-		//now copy into vecNewPop population
+		// Now copy into vecNewPop population
 		vecNewPop.push_back(Genome(baby1, 0));
 		vecNewPop.push_back(Genome(baby2, 0));
 	}
 
-	//finished so assign new pop back into m_vecPop
+	// Finished so assign new pop back into vecNewPop
 	mPopulation = vecNewPop;
 
 	return mPopulation;
 }
 
-//-------------------------GrabNBest----------------------------------
-//
-//	This works like an advanced form of elitism by inserting NumCopies
-//  copies of the NBest most fittest genomes into a population vector
-//--------------------------------------------------------------------
+// Returns a number of the fittest genomes
 void GeneticAlgorithm::GrabNBest(int NBest,	const int NumCopies, vector<Genome>	&Pop)
 {
-	//add the required amount of copies of the n most fittest 
-	//to the supplied vector
+	// Add the required amount of copies of the n most fittest to the supplied vector
 	while (NBest--)
 	{
 		for (int i = 0; i<NumCopies; ++i)
@@ -205,12 +174,8 @@ void GeneticAlgorithm::GrabNBest(int NBest,	const int NumCopies, vector<Genome>	
 	}
 }
 
-//-----------------------CalculateBestWorstAvTot-----------------------	
-//
-//	calculates the fittest and weakest genome and the average/total 
-//	fitness scores
-//---------------------------------------------------------------------
-void GeneticAlgorithm::CalculateBestWorstAvTot()
+// Calculates the fittest and weakest genome and the average/total fitness scores
+void GeneticAlgorithm::CalculateTotals()
 {
 	mTotalFitness = 0;
 
@@ -219,7 +184,7 @@ void GeneticAlgorithm::CalculateBestWorstAvTot()
 
 	for (int i = 0; i<mPopulationSize; ++i)
 	{
-		//update fittest if necessary
+		// Update fittest if necessary
 		if (mPopulation[i].Fitness > HighestSoFar)
 		{
 			HighestSoFar = mPopulation[i].Fitness;
@@ -229,7 +194,7 @@ void GeneticAlgorithm::CalculateBestWorstAvTot()
 			mBestFitness = HighestSoFar;
 		}
 
-		//update worst if necessary
+		// Update worst if necessary
 		if (mPopulation[i].Fitness < LowestSoFar)
 		{
 			LowestSoFar = mPopulation[i].Fitness;
@@ -240,15 +205,12 @@ void GeneticAlgorithm::CalculateBestWorstAvTot()
 		mTotalFitness += mPopulation[i].Fitness;
 
 
-	}//next chromo
+	}
 
 	mAverageFitness = mTotalFitness / mPopulationSize;
 }
 
-//-------------------------Reset()------------------------------
-//
-//	resets all the relevant variables ready for a new generation
-//--------------------------------------------------------------
+// Resets all the relevant variables ready for a new generation
 void GeneticAlgorithm::Reset()
 {
 	mTotalFitness = 0;

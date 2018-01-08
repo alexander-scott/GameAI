@@ -16,5 +16,13 @@ public:
 	CharacterAI(SDL_Renderer* renderer, string imagePath, LevelMap* map, Vector2D startPosition);
 	~CharacterAI();
 
-	vector<double> GetSurroundings(Vector2D enemyLocation, vector<CharacterRainbow*> _mRainbows);
+	void GenerateSurroundings(Vector2D enemyLocation, vector<CharacterRainbow*> _mRainbows);
+	vector<Vector2D> GetSurroundingPositions() { return mSurroundingPositions; }
+	double GetSurrounding(int index);
+
+	vector<double> GetSurroundings() { return mSurroundings; }
+
+private:
+	vector<Vector2D>		mSurroundingPositions;
+	vector<double>			mSurroundings;
 };

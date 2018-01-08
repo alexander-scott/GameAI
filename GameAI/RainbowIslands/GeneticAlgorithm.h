@@ -45,7 +45,7 @@ private:
 
 	void GrabNBest(int NBest, const int NumCopies, vector<Genome> &vecPop);
 
-	void CalculateBestWorstAvTot();
+	void CalculateTotals();
 
 	void Reset();
 	

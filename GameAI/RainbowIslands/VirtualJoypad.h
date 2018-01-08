@@ -25,7 +25,8 @@ private:
 
 //--------------------------------------------------------------------------------------------------
 private:
-	static VirtualJoypad* mInstance;
+	static VirtualJoypad*	mInstance;
+	bool					mDebugPressed;
 
 public:
 	bool LeftArrow;
@@ -33,6 +34,7 @@ public:
 	bool UpArrow;
 	bool DownArrow;
 	bool ForceRestartLevel;
+	bool DebugView;
 };
 
 //--------------------------------------------------------------------------------------------------

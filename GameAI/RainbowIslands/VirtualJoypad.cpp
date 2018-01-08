@@ -16,6 +16,8 @@ VirtualJoypad::VirtualJoypad()
 	UpArrow = false;
 	DownArrow = false;
 	ForceRestartLevel = false;
+	DebugView = false;
+	mDebugPressed = false;
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -63,6 +65,10 @@ void VirtualJoypad::SetJoypadState(SDL_Event e)
 					DownArrow = false;
 				break;
 
+				case SDLK_d:
+					mDebugPressed = false;
+					break;
+
 				default:
 				break;
 			}
@@ -90,6 +96,15 @@ void VirtualJoypad::SetJoypadState(SDL_Event e)
 				case SDLK_r:
 					ForceRestartLevel = true;
 				break;
+
+				case SDLK_d:
+					if (!mDebugPressed)
+					{
+						DebugView = !DebugView;
+						mDebugPressed = true;
+					}
+						
+					break;
 
 				default:
 				break;

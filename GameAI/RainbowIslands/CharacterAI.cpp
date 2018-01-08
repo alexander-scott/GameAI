@@ -9,9 +9,10 @@ CharacterAI::~CharacterAI()
 {
 }
 
-vector<double> CharacterAI::GetSurroundings(Vector2D enemyLocation, vector<CharacterRainbow*> _mRainbows)
+void CharacterAI::GenerateSurroundings(Vector2D enemyLocation, vector<CharacterRainbow*> _mRainbows)
 {
-	vector<double> surroundings;
+	mSurroundings.clear();
+	mSurroundingPositions.clear();
 
 	int centreXPos = (int)GetCentralPosition().x / TILE_WIDTH;
 	int centreYPos = (int)GetCentralPosition().y / TILE_HEIGHT;
@@ -28,12 +29,13 @@ vector<double> CharacterAI::GetSurroundings(Vector2D enemyLocation, vector<Chara
 	{
 		for (int width = startWidth; width < endWidth; width += mSingleSpriteWidth)
 		{
+			mSurroundingPositions.push_back(Vector2D(width, height));
 			if (height < startHeight + (mSingleSpriteHeight * 2))
 			{
 				if (width == 0 || width <= 0 ||	width >= kRainbowIslandsScreenWidth || width + mSingleSpriteWidth <= 0 || enemyLocation.Distance(Vector2D(width, height)) < 20)
-					surroundings.push_back(1);
+					mSurroundings.push_back(1);
 				else
-					surroundings.push_back(0);
+					mSurroundings.push_back(0);
 			}
 			else
 			{
@@ -44,7 +46,7 @@ vector<double> CharacterAI::GetSurroundings(Vector2D enemyLocation, vector<Chara
 					
 					if (abs(rainbowPosition.Distance(Vector2D(width, height))) < 28) 
 					{
-						surroundings.push_back(1);
+						mSurroundings.push_back(1);
 						rainbowFound = true;
 						break;
 					}
@@ -57,16 +59,21 @@ vector<double> CharacterAI::GetSurroundings(Vector2D enemyLocation, vector<Chara
 				else 
 				{
 					if (width == 0 || width <= 0 ||	width >= kRainbowIslandsScreenWidth || width + mSingleSpriteWidth <= 0 || enemyLocation.Distance(Vector2D(width, height)) < 20)
-						surroundings.push_back(1);
+						mSurroundings.push_back(1);
 					else
-						surroundings.push_back(mCurrentLevelMap->GetCollisionTileAt(height / TILE_HEIGHT, width / TILE_WIDTH));
+						mSurroundings.push_back(mCurrentLevelMap->GetCollisionTileAt(height / TILE_HEIGHT, width / TILE_WIDTH));
 				}
 			}
 		}
 	}
+}
 
-	if (surroundings.size() != 35)
-		cout << "ERROR OCCURED: INCORRECT SURROUNDINGS" << endl;
+double CharacterAI::GetSurrounding(int index)
+{
+	if (index < mSurroundings.size())
+	{
+		return mSurroundings[index];
+	}
 
-	return surroundings;
+	return 0.0;
 }

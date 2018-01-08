@@ -10,7 +10,6 @@ struct Neuron
 {
 	int				NumInputs;
 	vector<double>	Weights;
-	int				Error;
 	double			Activation = 0.5;
 
 	Neuron(int);
@@ -31,7 +30,6 @@ public:
 	~NeuralNetwork();
 
 	void CreateNet();
-	bool NetworkTrainingEpoch(vector<double> inputs, vector<double> outputs, double score, double maxScore);
 
 	vector<double> GetWeights()const;
 	int GetNumberOfWeights()const;
@@ -43,8 +41,5 @@ public:
 
 private:
 	vector<NeuronLayer>			mLayers;
-	int							mNumEpochs;
-	double						mErrorSum;
-
 };
 
